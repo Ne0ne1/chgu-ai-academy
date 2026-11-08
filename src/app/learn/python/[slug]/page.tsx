@@ -42,8 +42,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     <>
       <Breadcrumbs
         items={[
-          { label: 'Программа', href: '/program' },
-          { label: 'Основы Python', href: '/program#python' },
+          { label: 'Моё обучение', href: '/' },
+          { label: 'Основы Python', href: '/program' },
           { label: lesson.title },
         ]}
       />

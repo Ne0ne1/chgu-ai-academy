@@ -10,7 +10,32 @@ import type {
   ProgressSnapshot,
   TopicLearningStatus,
 } from '@/lib/learning/contracts';
+import { POINTS_PER_ACCEPTED_TASK } from '@/lib/learning/contracts';
 import { isValidEvidence } from '@/lib/learning/evidence';
+import { listAvailableExerciseKeys } from '@/lib/learning/catalog';
+
+/** Points from unique accepted tasks only — same evidence as mastery. */
+export function pointsFromAccepted(acceptedIds: string[]): number {
+  return acceptedIds.length * POINTS_PER_ACCEPTED_TASK;
+}
+
+export function pointsMaximum(): number {
+  return listAvailableExerciseKeys().length * POINTS_PER_ACCEPTED_TASK;
+}
+
+export function courseExerciseProgress(state: LearningStateV1): {
+  accepted: number;
+  total: number;
+  titles: string[];
+} {
+  const keys = listAvailableExerciseKeys();
+  const acceptedSet = new Set(acceptedExerciseIds(state.attempts));
+  const acceptedTitles = keys
+    .map((key) => exercises[key])
+    .filter((item) => acceptedSet.has(item.id))
+    .map((item) => item.title);
+  return { accepted: acceptedTitles.length, total: keys.length, titles: acceptedTitles };
+}
 
 /** Accepted exercises are derived only from stored valid evidence attempts. */
 export function acceptedExerciseIds(attempts: Attempt[]): string[] {
@@ -72,16 +97,16 @@ export function buildProgressSnapshot(state: LearningStateV1, storageMessage?: s
       href: `/practice/${firstIncomplete[0]}`,
     };
   } else if (accepted.length > 0) {
-    nextStep = { label: 'Вернуться к программе', href: '/program' };
+    nextStep = { label: 'К курсу', href: '/program' };
   } else {
     const lesson = lessons['python/variables'];
-    nextStep = { label: 'Открыть первый урок', href: `/learn/${lesson.slug}` };
+    nextStep = { label: 'Начать', href: `/learn/${lesson.slug}` };
   }
 
   if (state.lastLocation) {
     const href = locationToHref(state.lastLocation);
     if (href && accepted.length === 0) {
-      nextStep = { label: 'Продолжить обучение', href };
+      nextStep = { label: 'Продолжить', href };
     }
   }
 
@@ -90,6 +115,8 @@ export function buildProgressSnapshot(state: LearningStateV1, storageMessage?: s
     masteredSkills,
     reviewSkills,
     nextStep,
+    points: pointsFromAccepted(accepted),
+    pointsMax: pointsMaximum(),
     storageMessage,
   };
 }
@@ -116,7 +143,7 @@ export function nextStepAfterPass(exerciseKey: string): { label: string; href: s
   if (nextKey) {
     return { label: `Следующая задача: ${exercises[nextKey].title}`, href: `/practice/${nextKey}` };
   }
-  return { label: 'К программе', href: '/program' };
+  return { label: 'К курсу', href: '/program' };
 }
 
 export function skillLabel(skillId: string): string {

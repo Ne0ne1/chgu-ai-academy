@@ -117,7 +117,8 @@ async function main() {
     await page.goto(`${base}/`);
     await page.evaluate(() => localStorage.removeItem('chgu-ai-academy:learning:v1'));
     await page.reload();
-    await page.getByRole('link', { name: /Начать урок|Продолжить обучение|Попробовать урок|Начать обучение/ }).click();
+    await page.getByRole('heading', { name: 'Моё обучение' }).waitFor();
+    await page.getByRole('link', { name: /^Начать$/ }).click();
     await page.waitForURL(/\/learn\/python\/variables/);
 
     await page.locator('details.lesson-help > summary').click();
@@ -141,7 +142,7 @@ async function main() {
     await page.getByText(/каким действием найти сумму/i).waitFor();
     await page.getByRole('button', { name: 'Помощь по ошибке' }).click();
     await page.getByText(/Режим: подготовленные подсказки|Режим: локальная модель/).waitFor({ timeout: 30_000 });
-    await page.getByText(/Следующий шаг|Маленький пример|Проверьте себя|тип|вывод|имя/i).first().waitFor();
+    await page.locator('.practice-help, .mentor-teaching, .help-after-error').getByText(/Следующий шаг|Проверьте себя|вычисл|имя|вход/i).first().waitFor();
 
     // Change code while a check is in flight — must not record Attempt/Mastery
     const goodCode = [
@@ -178,12 +179,13 @@ async function main() {
     ].join('\n'));
     await page.getByRole('button', { name: 'Проверить' }).click();
     await page.getByText(/Решение принято/).waitFor({ timeout: 60_000 });
-    await page.getByRole('link', { name: /К программе/ }).click();
+    await page.getByRole('link', { name: /К курсу/ }).click();
     await page.waitForURL(/\/program/);
 
     await page.goto(`${base}/progress`);
-    await page.getByRole('heading', { name: 'Принятые задачи' }).waitFor();
+    await page.getByRole('heading', { name: 'Подтверждённый результат', exact: true }).waitFor();
     await page.getByText('План на учебную неделю').waitFor();
+    await page.locator('.progress-simple').getByText(/Баллы:\s*200/).waitFor();
 
     // Reset learning data
     page.once('dialog', (dialog) => dialog.accept());
@@ -206,7 +208,7 @@ async function main() {
     }
 
     await page.goto(`${base}/`);
-    await page.getByRole('link', { name: 'Продолжить обучение' }).waitFor();
+    await page.getByRole('link', { name: /^Продолжить$/ }).waitFor();
 
     // Infinite loop / timeout
     await page.goto(`${base}/practice/variables`);

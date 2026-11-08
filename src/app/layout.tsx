@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </main>
           <footer className="site-footer">
             <span>CHGU AI Academy</span>
-            <span>Учебный прототип · без аккаунта</span>
+            <span>Учебная программа</span>
           </footer>
         </ThemeProvider>
       </body>

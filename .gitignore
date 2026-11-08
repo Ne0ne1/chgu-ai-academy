@@ -9,3 +9,8 @@ public/monaco/
 public/python/
 .vercel
 .cursor/
+
+# Private reference screenshots — never commit
+private-refs/
+**/yandex-lms*
+**/practicum-account*

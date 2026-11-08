@@ -11,8 +11,17 @@ export default async function Page({ params }: { params: Promise<{ lessonId: str
   if (!exercise) notFound();
   const lesson = Object.values(lessons).find(item => item.id === exercise.lessonId);
   if (!lesson) notFound();
-  return <><Breadcrumbs items={[{ label: 'Программа', href: '/program' }, { label: lesson.title, href: `/learn/${lesson.slug}` }, { label: 'Практика' }]}/>
-    <header className="page-title practice-heading"><p className="small muted">Практика · Основы Python</p><h1>{exercise.title}</h1></header>
+  return <>
+    <Breadcrumbs items={[
+      { label: 'Моё обучение', href: '/' },
+      { label: 'Основы Python', href: '/program' },
+      { label: lesson.title, href: `/learn/${lesson.slug}` },
+      { label: 'Практика' },
+    ]}/>
+    <header className="page-title practice-heading">
+      <p className="small muted">Практика · Основы Python</p>
+      <h1>{exercise.title}</h1>
+    </header>
     <Practice key={exercise.id} exercise={exercise} lessonSlug={lesson.slug} exerciseKey={lessonId}/>
   </>;
 }

@@ -27,11 +27,16 @@ export interface LearningStateV1 {
 
 export type TopicLearningStatus = 'not_started' | 'learning' | 'needs_review' | 'mastered';
 
+export const POINTS_PER_ACCEPTED_TASK = 100;
+
 export interface ProgressSnapshot {
   acceptedExerciseIds: string[];
   masteredSkills: Mastery[];
   reviewSkills: Mastery[];
   nextStep: { label: string; href: string } | null;
+  /** Derived: unique accepted tasks × POINTS_PER_ACCEPTED_TASK. Not a separate counter. */
+  points: number;
+  pointsMax: number;
   storageMessage?: string;
 }
 

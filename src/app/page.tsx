@@ -1,34 +1,32 @@
-import Link from 'next/link';
-import { HomeProgressSummary, HomeStartAction } from '@/components/learning/home-continue';
-import { variablesLesson } from '@/content/lessons';
+import { CourseCard } from '@/components/learning/home-continue';
+import { modules } from '@/content/curriculum';
 
 export default function Home() {
+  const planned = modules.filter((module) => module.id !== 'python');
+
   return (
-    <div className="home-page home-page-simple">
-      <header className="home-simple-header">
-        <p className="home-kicker">CHGU AI Academy</p>
-        <h1>Учите Python с проверкой в браузере</h1>
-        <p className="home-lead">
-          Урок → задача → проверка тестами → подсказка при ошибке. Без установки Python и без регистрации.
-        </p>
-        <div className="home-cta-row">
-          <HomeStartAction />
-        </div>
+    <div className="cabinet-home">
+      <header className="cabinet-home-header">
+        <h1>Моё обучение</h1>
       </header>
 
-      <section className="home-available" aria-labelledby="current-lesson">
-        <h2 id="current-lesson">Сейчас доступно</h2>
-        <p>
-          Урок «{variablesLesson.title}» и две задачи с запуском Python в браузере. Оценка только по тестам —
-          чтение и подсказка освоение не подтверждают.
-        </p>
-        <HomeProgressSummary />
-        <p className="home-scope small muted">
-          Это учебный прототип, не годовая программа.{' '}
-          <Link className="text-link" href="/about">
-            О границах
-          </Link>
-        </p>
+      <section aria-labelledby="available-course">
+        <h2 id="available-course" className="sr-only">
+          Доступный курс
+        </h2>
+        <CourseCard />
+      </section>
+
+      <section className="cabinet-plan" aria-labelledby="plan-title">
+        <h2 id="plan-title">Дальше по плану</h2>
+        <ul className="cabinet-plan-list">
+          {planned.map((module) => (
+            <li key={module.id}>
+              <span className="cabinet-plan-name">{module.title}</span>
+              <span className="cabinet-plan-status">Пока недоступен</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

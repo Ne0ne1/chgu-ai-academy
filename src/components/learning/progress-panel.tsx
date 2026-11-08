@@ -11,12 +11,10 @@ export function ProgressPanel() {
   const [snapshot, setSnapshot] = useState<ProgressSnapshot>(() =>
     buildProgressSnapshot(createEmptyLearningState()),
   );
-  const [note, setNote] = useState<string | undefined>();
 
   function refresh() {
     const { state, message } = readLearningState();
     setSnapshot(buildProgressSnapshot(state, message));
-    setNote(message);
   }
 
   useEffect(() => {
@@ -25,9 +23,8 @@ export function ProgressPanel() {
 
   function handleReset() {
     if (!window.confirm('Сбросить только учебные данные этого сайта? Тема оформления не изменится.')) return;
-    const result = resetLearningState();
+    resetLearningState();
     refresh();
-    setNote(result.ok ? 'Учебные данные очищены.' : result.message);
   }
 
   const acceptedTitles = snapshot.acceptedExerciseIds.map(
@@ -36,10 +33,20 @@ export function ProgressPanel() {
 
   return (
     <section className="progress-simple" aria-label="Учебный прогресс">
+      <div className="progress-points" role="status">
+        <p>
+          Баллы: <strong>{snapshot.points}</strong> / {snapshot.pointsMax}
+        </p>
+        <p className="small muted">
+          100 баллов за каждую уникальную принятую задачу. Повторная сдача не добавляет баллы. Это баллы учебного
+          прототипа, не университетская оценка.
+        </p>
+      </div>
+
       {acceptedTitles.length === 0 && snapshot.masteredSkills.length === 0 ? (
         <>
           <h2>Пока нет проверенных решений</h2>
-          <p>Пройдите урок и сдайте задачи. Чтение и самопроверка освоение не подтверждают.</p>
+          <p>Пройдите урок и сдайте задачи. Чтение и подсказки освоение не подтверждают.</p>
         </>
       ) : (
         <>
@@ -64,16 +71,6 @@ export function ProgressPanel() {
               ))}
             </ul>
           )}
-          {snapshot.reviewSkills.length > 0 && (
-            <>
-              <h3>Нужно повторить</h3>
-              <ul className="progress-list">
-                {snapshot.reviewSkills.map((item) => (
-                  <li key={item.skillId}>{skillLabel(item.skillId)}</li>
-                ))}
-              </ul>
-            </>
-          )}
         </>
       )}
 
@@ -85,7 +82,7 @@ export function ProgressPanel() {
         )}
       </div>
 
-      {note && <p className="small muted">{note}</p>}
+      {snapshot.storageMessage && <p className="small muted">{snapshot.storageMessage}</p>}
       <p className="progress-reset">
         <button className="text-link" type="button" onClick={handleReset}>
           Сбросить учебные данные
