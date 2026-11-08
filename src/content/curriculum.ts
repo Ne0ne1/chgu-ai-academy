@@ -1,15 +1,120 @@
 import type { Module, LaboratoryProject } from '@/lib/contracts';
+
 export const modules: Module[] = [
- { id:'python', number:'01', title:'Основы разработки', months:'1–2', summary:'Python, Git, алгоритмы, SQL и API', artifact:'Консольный проект и небольшой Python-сервис', topics:[{title:'Переменные и типы данных',lessonSlug:'python/variables',status:'available'},{title:'Условия и логика',status:'planned'},{title:'Циклы и коллекции',status:'planned'},{title:'Функции и декомпозиция',status:'planned'},{title:'Git, SQL и API',status:'planned'}]},
- { id:'math', number:'02', title:'Математика и данные', months:'3', summary:'Линейная алгебра, вероятность, NumPy и pandas', artifact:'Воспроизводимый notebook с анализом данных',topics:[{title:'Векторы и матрицы',status:'planned'},{title:'Статистика и анализ данных',status:'planned'}]},
- { id:'ml', number:'03', title:'Машинное обучение', months:'4–5', summary:'Модели, метрики, валидация и интерпретация', artifact:'ML-пайплайн с честной оценкой качества',topics:[{title:'Регрессия и классификация',status:'planned'},{title:'Метрики, утечки и кросс-валидация',status:'planned'}]},
- { id:'dl', number:'04', title:'Глубокое обучение', months:'6–7', summary:'PyTorch, нейронные сети, компьютерное зрение', artifact:'Обученная модель и отчёт об эксперименте',topics:[{title:'Нейронные сети с PyTorch',status:'planned'},{title:'Компьютерное зрение и основы NLP',status:'planned'}]},
- { id:'llm', number:'05', title:'LLM Engineering', months:'8–9', summary:'Transformers, RAG, агенты и оценка ответов', artifact:'AI-приложение с набором проверочных вопросов',topics:[{title:'Embeddings и поиск',status:'planned'},{title:'RAG и оценка LLM',status:'planned'}]},
- { id:'production', number:'06', title:'От модели к сервису', months:'10', summary:'FastAPI, Docker, мониторинг и безопасность', artifact:'Развёрнутый демонстрационный сервис',topics:[{title:'API и контейнеризация',status:'planned'},{title:'Мониторинг и безопасность',status:'planned'}]},
- { id:'capstone', number:'07', title:'AI Laboratory · выпускной проект', months:'11–12', summary:'Командная работа над задачей университета', artifact:'Проект, документация и публичная защита',topics:[{title:'Постановка задачи и эксперимент',status:'planned'},{title:'Разработка и защита проекта',status:'planned'}]}
+  {
+    id: 'python',
+    number: '01',
+    title: 'Основы разработки',
+    months: '1–2',
+    summary: 'Python, Git, алгоритмы, SQL и API',
+    artifact: 'Консольный проект и небольшой Python-сервис',
+    topics: [
+      { title: 'Переменные и типы данных', lessonSlug: 'python/variables', status: 'available' },
+      { title: 'Условия и логика', lessonSlug: 'python/conditions', status: 'available' },
+      { title: 'Циклы и коллекции', lessonSlug: 'python/loops', status: 'available' },
+      { title: 'Функции и декомпозиция', lessonSlug: 'python/functions', status: 'available' },
+      { title: 'Git, SQL и API', lessonSlug: 'python/tools', status: 'available' },
+    ],
+  },
+  {
+    id: 'math',
+    number: '02',
+    title: 'Математика и данные',
+    months: '3',
+    summary: 'Линейная алгебра, вероятность, NumPy и pandas',
+    artifact: 'Воспроизводимый notebook с анализом данных',
+    topics: [
+      { title: 'Векторы и матрицы', lessonSlug: 'math/vectors', status: 'available' },
+      { title: 'Статистика и анализ данных', lessonSlug: 'math/stats', status: 'available' },
+    ],
+  },
+  {
+    id: 'ml',
+    number: '03',
+    title: 'Машинное обучение',
+    months: '4–5',
+    summary: 'Модели, метрики, валидация и интерпретация',
+    artifact: 'ML-пайплайн с честной оценкой качества',
+    topics: [
+      { title: 'Регрессия и классификация', lessonSlug: 'ml/models', status: 'available' },
+      { title: 'Метрики, утечки и кросс-валидация', lessonSlug: 'ml/metrics', status: 'available' },
+    ],
+  },
+  {
+    id: 'dl',
+    number: '04',
+    title: 'Глубокое обучение',
+    months: '6–7',
+    summary: 'PyTorch, нейронные сети, компьютерное зрение',
+    artifact: 'Обученная модель и отчёт об эксперименте',
+    topics: [
+      { title: 'Нейронные сети с PyTorch', lessonSlug: 'dl/torch', status: 'available' },
+      { title: 'Компьютерное зрение и основы NLP', lessonSlug: 'dl/vision', status: 'available' },
+    ],
+  },
+  {
+    id: 'llm',
+    number: '05',
+    title: 'LLM Engineering',
+    months: '8–9',
+    summary: 'Transformers, RAG, агенты и оценка ответов',
+    artifact: 'AI-приложение с набором проверочных вопросов',
+    topics: [
+      { title: 'Embeddings и поиск', lessonSlug: 'llm/embeddings', status: 'available' },
+      { title: 'RAG и оценка LLM', lessonSlug: 'llm/rag', status: 'available' },
+    ],
+  },
+  {
+    id: 'production',
+    number: '06',
+    title: 'От модели к сервису',
+    months: '10',
+    summary: 'FastAPI, Docker, мониторинг и безопасность',
+    artifact: 'Развёрнутый демонстрационный сервис',
+    topics: [
+      { title: 'API и контейнеризация', lessonSlug: 'production/api', status: 'available' },
+      { title: 'Мониторинг и безопасность', lessonSlug: 'production/monitor', status: 'available' },
+    ],
+  },
+  {
+    id: 'capstone',
+    number: '07',
+    title: 'AI Laboratory · выпускной проект',
+    months: '11–12',
+    summary: 'Командная работа над задачей университета',
+    artifact: 'Проект, документация и публичная защита',
+    topics: [
+      { title: 'Постановка задачи и эксперимент', lessonSlug: 'capstone/brief', status: 'available' },
+      { title: 'Разработка и защита проекта', lessonSlug: 'capstone/defense', status: 'available' },
+    ],
+  },
 ];
+
 export const projects: LaboratoryProject[] = [
- {id:'assistant',title:'Навигатор по университету',area:'LLM · RAG',description:'Помощник по открытым документам: отвечает на вопросы и показывает источник каждого ответа.',deliverable:'Поисковый прототип с проверкой точности цитирования.',skills:['Python','RAG','Evaluation']},
- {id:'language',title:'Технологии для чеченского языка',area:'NLP · DATA',description:'Исследование открытых языковых данных и инструментов поиска с уважением к лицензиям и качеству корпуса.',deliverable:'Небольшой проверенный корпус и поисковый эксперимент.',skills:['NLP','Data quality','Embeddings']},
- {id:'campus',title:'Данные устойчивого кампуса',area:'ML · ANALYTICS',description:'Анализ обезличенных или синтетических данных об использовании ресурсов кампуса.',deliverable:'Notebook, прогноз и понятный отчёт об ограничениях.',skills:['pandas','ML','Visualization']}
+  {
+    id: 'assistant',
+    title: 'Навигатор по университету',
+    area: 'LLM · RAG',
+    description:
+      'Помощник по открытым документам: отвечает на вопросы и показывает источник каждого ответа.',
+    deliverable: 'Поисковый прототип с проверкой точности цитирования.',
+    skills: ['Python', 'RAG', 'Evaluation'],
+  },
+  {
+    id: 'language',
+    title: 'Технологии для чеченского языка',
+    area: 'NLP · DATA',
+    description:
+      'Исследование открытых языковых данных и инструментов поиска с уважением к лицензиям и качеству корпуса.',
+    deliverable: 'Небольшой проверенный корпус и поисковый эксперимент.',
+    skills: ['NLP', 'Data quality', 'Embeddings'],
+  },
+  {
+    id: 'campus',
+    title: 'Данные устойчивого кампуса',
+    area: 'ML · ANALYTICS',
+    description: 'Анализ обезличенных или синтетических данных об использовании ресурсов кампуса.',
+    deliverable: 'Notebook, прогноз и понятный отчёт об ограничениях.',
+    skills: ['pandas', 'ML', 'Visualization'],
+  },
 ];

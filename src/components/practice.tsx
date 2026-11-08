@@ -9,7 +9,11 @@ import { gradeExercise, type GradeReport } from '@/lib/grading/grade';
 import { lessonHref, type GradeIssue } from '@/lib/grading/feedback';
 import { usePythonRuntime } from '@/hooks/use-python-runtime';
 import { useLearningStore } from '@/hooks/use-learning-store';
-import { nextStepAfterPass, recentAttemptsForExercise } from '@/lib/learning/progress';
+import {
+  acceptedExerciseIds,
+  nextStepAfterPass,
+  recentAttemptsForExercise,
+} from '@/lib/learning/progress';
 import { programExamples } from '@/lib/learning/task-examples';
 import type { RuntimeRunResult } from '@/lib/runtime/contracts';
 import { askMentor } from '@/components/mentor/ask-mentor';
@@ -117,6 +121,8 @@ export function Practice({
   const [plain, setPlain] = useState(false);
   const [runResult, setRunResult] = useState<RuntimeRunResult | null>(null);
   const [grade, setGrade] = useState<GradeReport | null>(null);
+  const [mode, setMode] = useState<'check' | 'submit' | null>(null);
+  const [submitWasRepeat, setSubmitWasRepeat] = useState(false);
   const [checkedCode, setCheckedCode] = useState<string | null>(null);
   const [discardedDuringCheck, setDiscardedDuringCheck] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
@@ -160,32 +166,17 @@ export function Practice({
     () => (hydrated ? recentAttemptsForExercise(exercise.id, state, 5) : []),
     [hydrated, exercise.id, state],
   );
+  const examples = useMemo(() => programExamples(exercise, 2), [exercise]);
 
-  function download() {
-    const url = URL.createObjectURL(new Blob([code], { type: 'text/x-python;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${exercise.id}.py`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  async function handleRun() {
-    setGrade(null);
-    setCheckedCode(null);
-    setDiscardedDuringCheck(false);
-    setMentorText('');
-    setMentorMode(null);
-    const snapshot = code;
-    const result = await run({ code: snapshot, stdin: exercise.visibleTests[0]?.stdin ?? '' });
-    setRunResult(result);
-  }
-
-  async function handleCheck() {
+  async function gradeCurrent(asSubmit: boolean) {
     setRunResult(null);
     setDiscardedDuringCheck(false);
     setMentorText('');
     setMentorMode(null);
+    setMode(asSubmit ? 'submit' : 'check');
+    if (asSubmit) {
+      setSubmitWasRepeat(acceptedExerciseIds(state.attempts).includes(exercise.id));
+    }
     const snapshot = code;
     const report = await gradeExercise(exercise, snapshot, (input) => run(input));
 
@@ -198,7 +189,20 @@ export function Practice({
 
     setGrade(report);
     setCheckedCode(snapshot);
-    recordAttempt(exercise, report.attempt);
+    if (asSubmit) {
+      recordAttempt(exercise, report.attempt);
+    }
+  }
+
+  async function handleRun() {
+    setGrade(null);
+    setMode(null);
+    setCheckedCode(null);
+    setDiscardedDuringCheck(false);
+    setMentorText('');
+    setMentorMode(null);
+    const result = await run({ code, stdin: exercise.visibleTests[0]?.stdin ?? '' });
+    setRunResult(result);
   }
 
   async function requestMentorHelp() {
@@ -240,10 +244,9 @@ export function Practice({
     lessonSlug,
     primaryIssue?.lessonAnchor || mentorAnchor || '#lesson-help',
   );
-  const examples = useMemo(() => programExamples(exercise, 2), [exercise]);
 
   return (
-    <div className="practice-layout">
+    <div className="practice-layout practice-layout-3">
       <section className="practice-statement" aria-labelledby="task-title">
         <h2 id="task-title">Условие</h2>
         <p>{exercise.statement}</p>
@@ -255,13 +258,13 @@ export function Practice({
               {examples.length > 1 && <p className="small muted">Пример {index + 1}</p>}
               <dl className="verdict-grid">
                 <div>
-                  <dt>Входные данные</dt>
+                  <dt>Ввод</dt>
                   <dd>
                     <pre>{example.stdin.trim() || '(пусто)'}</pre>
                   </dd>
                 </div>
                 <div>
-                  <dt>Ожидаемый вывод</dt>
+                  <dt>Вывод</dt>
                   <dd>
                     <pre>{example.expectedStdout}</pre>
                   </dd>
@@ -271,73 +274,6 @@ export function Practice({
             </div>
           ))}
         </section>
-
-        <details className="practice-help">
-          <summary>Подсказка</summary>
-          <div className="help-content">
-            <p className="help-portion-note">Подсказки не меняют Attempt / Mastery и не засчитывают задачу.</p>
-            {exercise.hints.length > 0 ? (
-              <>
-                <p className="help-portion">{exercise.hints[0]}</p>
-                {exercise.hints.slice(1, hint + 1).map((text) => (
-                  <p className="help-portion" key={text}>
-                    {text}
-                  </p>
-                ))}
-                {hint < exercise.hints.length - 1 && (
-                  <button className="text-link" type="button" onClick={() => setHint(hint + 1)}>
-                    Показать следующую подсказку
-                  </button>
-                )}
-              </>
-            ) : (
-              <p>Вернитесь к примеру в уроке и сравните порядок действий.</p>
-            )}
-            {hasFailedAttempt && (
-              <div className="help-after-error">
-                <p>
-                  <button
-                    className="button secondary"
-                    type="button"
-                    disabled={mentorLoading}
-                    onClick={() => void requestMentorHelp()}
-                  >
-                    {mentorLoading ? 'Готовим помощь…' : 'Помощь по ошибке'}
-                  </button>
-                </p>
-                {mentorMode && <MentorModeLabel mode={mentorMode} modelName={mentorModel} />}
-                {mentorNotice && <p className="small muted">{mentorNotice}</p>}
-                {mentorError && (
-                  <p className="result-banner is-error" role="alert">
-                    {mentorError}
-                  </p>
-                )}
-                {mentorText && (
-                  <div className="mentor-teaching">
-                    <MentorAnswerText text={mentorText} />
-                  </div>
-                )}
-                <Link className="text-link help-back" href={lessonSectionHref}>
-                  Открыть раздел урока
-                </Link>
-                <details className="help-tech">
-                  <summary>Технические детали передачи кода</summary>
-                  <label className="small">
-                    <input
-                      type="checkbox"
-                      checked={includeCode}
-                      onChange={(event) => setIncludeCode(event.target.checked)}
-                    />{' '}
-                    Передать снимок проверенного кода настроенному серверу модели
-                  </label>
-                  <p className="small muted">
-                    На публичном сайте по умолчанию — подготовленные подсказки. Код уходит только после согласия.
-                  </p>
-                </details>
-              </div>
-            )}
-          </div>
-        </details>
       </section>
 
       <div className="practice-work">
@@ -358,15 +294,10 @@ export function Practice({
                 >
                   {plain ? 'Открыть Monaco' : 'Простой редактор'}
                 </button>
-                <button type="button" onClick={download}>
-                  Скачать .py
-                </button>
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Заменить код шаблоном? Ваши изменения будут потеряны.')) {
-                      setCode(exercise.starterCode);
-                    }
+                    if (window.confirm('Заменить код шаблоном?')) setCode(exercise.starterCode);
                   }}
                 >
                   Вернуть шаблон
@@ -386,21 +317,18 @@ export function Practice({
             <CodeEditor value={code} onChange={setCode} />
           )}
           <div className="editor-actions">
-            <button
-              className="button"
-              disabled={buttonsDisabled}
-              onClick={() => void handleCheck()}
-              aria-describedby="runtime-status"
-            >
-              Проверить
+            <button className="button secondary" disabled={buttonsDisabled} onClick={() => void handleRun()}>
+              Запустить
             </button>
             <button
               className="button secondary"
               disabled={buttonsDisabled}
-              onClick={() => void handleRun()}
-              aria-describedby="runtime-status"
+              onClick={() => void gradeCurrent(false)}
             >
-              Запустить
+              Проверить
+            </button>
+            <button className="button" disabled={buttonsDisabled} onClick={() => void gradeCurrent(true)}>
+              Отправить решение
             </button>
             {status === 'error' && (
               <button className="button secondary" type="button" onClick={() => void retryLoad()}>
@@ -409,7 +337,8 @@ export function Practice({
             )}
           </div>
           <p className="editor-note small muted">
-            Черновик сохраняется локально. Подсказки и «Запустить» не засчитывают решение.
+            «Запустить» — только вывод. «Проверить» — тесты без баллов. «Отправить решение» — запись попытки;
+            баллы начисляются один раз при первом принятии.
           </p>
         </section>
 
@@ -428,14 +357,12 @@ export function Practice({
                 {(runResult.stdout || runResult.stderr || runResult.errorMessage || '(пусто)').trimEnd() ||
                   '(пусто)'}
               </pre>
-              <p className="small muted">Запуск без проверки не создаёт успешную попытку.</p>
             </div>
           )}
           {discardedDuringCheck && (
             <div className="grade-output is-warn" role="status">
               <p>
-                <strong>Проверка не сохранена.</strong> Attempt и освоение не обновлены. Нажмите «Проверить» у
-                редактора.
+                <strong>Проверка не сохранена.</strong> Код изменился во время проверки.
               </p>
             </div>
           )}
@@ -444,15 +371,19 @@ export function Practice({
               className={`grade-output current-verdict ${grade.passed && !staleCheck ? 'is-ok' : 'is-error'}`}
               role="status"
             >
-              <p className="verdict-kicker">Текущий результат</p>
+              <p className="verdict-kicker">
+                {mode === 'submit' ? 'Отправка решения' : 'Проверка без баллов'}
+              </p>
               {staleCheck ? (
-                <p>
-                  Код изменился после последней проверки. Результат ниже — для сохранённого снимка. Чтобы оценить
-                  новый код, нажмите «Проверить».
-                </p>
+                <p>Код изменился после проверки. Нажмите «Проверить» или «Отправить решение» снова.</p>
               ) : grade.passed ? (
                 <p>
-                  <strong>Решение принято.</strong> Навыки подтверждены только пройденными тестами.
+                  <strong>{mode === 'submit' ? 'Решение принято.' : 'Тесты пройдены.'}</strong>
+                  {mode === 'check' && ' Чтобы засчитать баллы, нажмите «Отправить решение».'}
+                  {mode === 'submit' &&
+                    (submitWasRepeat
+                      ? ' Повторная отправка баллы не добавляет.'
+                      : ' Баллы начислены за первое принятие.')}
                 </p>
               ) : (
                 <p>
@@ -470,10 +401,10 @@ export function Practice({
                 <IssueList
                   issues={grade.issues}
                   stdin={failedTest?.stdin}
-                  nextHint="Исправьте код по причине выше и снова нажмите «Проверить»."
+                  nextHint="Исправьте код и снова нажмите «Проверить» или «Отправить решение»."
                 />
               )}
-              {grade.passed && !staleCheck && (
+              {grade.passed && mode === 'submit' && !staleCheck && (
                 <p className="next-action">
                   <Link className="button" href={nextStep.href}>
                     {nextStep.label}
@@ -482,14 +413,11 @@ export function Practice({
               )}
             </div>
           )}
-          {!runResult && !grade && !discardedDuringCheck && (
-            <p className="small muted">Нажмите «Проверить», чтобы оценить решение тестами.</p>
-          )}
 
           <section className="attempt-history" aria-labelledby="attempts-title">
             <h3 id="attempts-title">Последние попытки</h3>
             {attemptHistory.length === 0 ? (
-              <p className="small muted">Пока нет сохранённых попыток по этой задаче.</p>
+              <p className="small muted">Появятся после «Отправить решение».</p>
             ) : (
               <ul className="attempt-history-list">
                 {attemptHistory.map((attempt) => (
@@ -509,10 +437,72 @@ export function Practice({
                 ))}
               </ul>
             )}
-            <p className="small muted">Код прошлых попыток не хранится в истории — только вердикт и время.</p>
           </section>
         </section>
       </div>
+
+      <aside className="practice-mentor" aria-labelledby="mentor-title">
+        <h2 id="mentor-title">AI-наставник</h2>
+        <p className="small muted">
+          Подсказка по ошибке и следующий шаг. Полный код решения не выдаётся. На публичном сайте — подготовленные
+          ответы, не локальная модель.
+        </p>
+        <details className="practice-help">
+          <summary>Подсказка по условию</summary>
+          <div className="help-content">
+            {exercise.hints.length > 0 ? (
+              <>
+                <p>{exercise.hints[0]}</p>
+                {exercise.hints.slice(1, hint + 1).map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+                {hint < exercise.hints.length - 1 && (
+                  <button className="text-link" type="button" onClick={() => setHint(hint + 1)}>
+                    Ещё подсказка
+                  </button>
+                )}
+              </>
+            ) : (
+              <p>Сверьте пример ввода и вывода.</p>
+            )}
+          </div>
+        </details>
+        {hasFailedAttempt && (
+          <div className="help-after-error">
+            <button
+              className="button secondary"
+              type="button"
+              disabled={mentorLoading}
+              onClick={() => void requestMentorHelp()}
+            >
+              {mentorLoading ? 'Готовим помощь…' : 'Разобрать ошибку'}
+            </button>
+            {mentorMode && <MentorModeLabel mode={mentorMode} modelName={mentorModel} />}
+            {mentorNotice && <p className="small muted">{mentorNotice}</p>}
+            {mentorError && (
+              <p className="result-banner is-error" role="alert">
+                {mentorError}
+              </p>
+            )}
+            {mentorText && (
+              <div className="mentor-teaching">
+                <MentorAnswerText text={mentorText} />
+              </div>
+            )}
+            <Link className="text-link" href={lessonSectionHref}>
+              К разделу урока
+            </Link>
+            <label className="small">
+              <input
+                type="checkbox"
+                checked={includeCode}
+                onChange={(event) => setIncludeCode(event.target.checked)}
+              />{' '}
+              Передать снимок кода (только по согласию)
+            </label>
+          </div>
+        )}
+      </aside>
     </div>
   );
 }

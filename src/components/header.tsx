@@ -7,7 +7,9 @@ import { useTheme } from './theme-provider';
 import { buildProgressSnapshot, courseExerciseProgress } from '@/lib/learning/progress';
 import { readLearningState, resetLearningState } from '@/lib/learning/storage';
 
-const PROFILE_NAME = 'Гость';
+import { DEMO_PROFILE_NAME } from '@/content/demo-data';
+
+const PROFILE_NAME = DEMO_PROFILE_NAME;
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -102,7 +104,7 @@ export function Header() {
           <div className="user-popover profile-panel">
             <div className="profile-panel-head">
               <p className="profile-panel-name">{PROFILE_NAME}</p>
-              <p className="small muted">Локальный профиль на этом устройстве. Без входа и синхронизации.</p>
+              <p className="small muted">Демо-профиль · данные хранятся в этом браузере</p>
             </div>
 
             <div className="profile-progress-block">

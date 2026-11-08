@@ -1,4 +1,5 @@
 import type { Lesson, Exercise, DiagnosticQuestion } from '@/lib/contracts';
+import { readingLessons } from '@/content/reading-lessons';
 
 export const variablesLesson: Lesson = {
   id: 'variables',
@@ -69,7 +70,7 @@ export const variablesLesson: Lesson = {
       output: 'Баллы: 5\n6',
     },
   ],
-  exercises: ['study-plan', 'session-minutes'],
+  exercises: ['study-plan', 'session-minutes', 'name-greeting', 'next-year', 'two-average'],
   references: [
     {
       title: 'Python Tutorial · An Informal Introduction',
@@ -87,7 +88,10 @@ export const variablesLesson: Lesson = {
   },
 };
 
-export const lessons: Record<string, Lesson> = { 'python/variables': variablesLesson };
+export const lessons: Record<string, Lesson> = {
+  'python/variables': variablesLesson,
+  ...readingLessons,
+};
 
 export const exercises: Record<string, Exercise> = {
   variables: {
@@ -168,6 +172,110 @@ export const exercises: Record<string, Exercise> = {
       'Вход уже лежит в minutes_text как строка. Какая функция делает из подходящей текстовой записи целое число?',
       'После преобразования посчитайте длительность трёх одинаковых сессий и сохраните её под отдельным именем.',
       'Соберите итоговую фразу через f-строку. Проверьте слова, пробелы и единицы измерения в образце вывода.',
+    ],
+  },
+  'variables-greeting': {
+    id: 'name-greeting',
+    lessonId: 'variables',
+    title: 'Приветствие',
+    statement:
+      'Программа читает одно слово — имя — через input() в переменную name. Выведите строку вида «Привет, Амина!» с помощью f-строки. Имя должно браться из ввода, а не из константы.',
+    starterCode: 'name = input()\n\n# Выведите приветствие\n',
+    expectedSkillIds: ['python.variables', 'python.fstrings'],
+    visibleTests: [
+      {
+        id: 'case-amina',
+        description: 'Ввод Амина',
+        stdin: 'Амина\n',
+        expectedStdout: 'Привет, Амина!',
+        variableChecks: [{ name: 'name', expectedType: 'str', expectedValue: 'Амина' }],
+      },
+      {
+        id: 'case-isa',
+        description: 'Ввод Иса',
+        stdin: 'Иса\n',
+        expectedStdout: 'Привет, Иса!',
+        variableChecks: [{ name: 'name', expectedType: 'str', expectedValue: 'Иса' }],
+      },
+    ],
+    hiddenTests: [],
+    hints: [
+      'Сохраните результат input() в name.',
+      'Соберите фразу через f-строку: f"Привет, {name}!"',
+      'Проверьте пробел после запятой и восклицательный знак в конце.',
+    ],
+  },
+  'variables-next-year': {
+    id: 'next-year',
+    lessonId: 'variables',
+    title: 'Следующий год',
+    statement:
+      'Программа читает возраст текстом в age_text через input(). Преобразуйте в целое age, вычислите next_age = age + 1 и выведите «Через год: 19» с помощью f-строки.',
+    starterCode: 'age_text = input()\n\n# Преобразуйте, прибавьте 1 и выведите результат\n',
+    expectedSkillIds: ['python.conversion', 'python.variables', 'python.fstrings'],
+    visibleTests: [
+      {
+        id: 'case-18',
+        description: 'Ввод 18',
+        stdin: '18\n',
+        expectedStdout: 'Через год: 19',
+        variableChecks: [
+          { name: 'age_text', expectedType: 'str', expectedValue: '18' },
+          { name: 'age', expectedType: 'int', expectedValue: 18 },
+          { name: 'next_age', expectedType: 'int', expectedValue: 19 },
+        ],
+      },
+      {
+        id: 'case-20',
+        description: 'Ввод 20',
+        stdin: '20\n',
+        expectedStdout: 'Через год: 21',
+        variableChecks: [
+          { name: 'age', expectedType: 'int', expectedValue: 20 },
+          { name: 'next_age', expectedType: 'int', expectedValue: 21 },
+        ],
+      },
+    ],
+    hiddenTests: [],
+    hints: [
+      'age_text — строка. Для арифметики нужен int(age_text).',
+      'Сохраните age + 1 в next_age.',
+      'Выведите f"Через год: {next_age}" без лишних пробелов.',
+    ],
+  },
+  'variables-average': {
+    id: 'two-average',
+    lessonId: 'variables',
+    title: 'Среднее двух чисел',
+    statement:
+      'Программа читает два целых числа a и b (каждое на своей строке). Вычислите average как (a + b) / 2 — это будет float — и выведите «Среднее: 4.5» с помощью f-строки.',
+    starterCode: 'a = int(input())\nb = int(input())\n\n# Вычислите average и выведите результат\n',
+    expectedSkillIds: ['python.variables', 'python.arithmetic', 'python.fstrings'],
+    visibleTests: [
+      {
+        id: 'case-3-6',
+        description: 'Ввод 3 и 6',
+        stdin: '3\n6\n',
+        expectedStdout: 'Среднее: 4.5',
+        variableChecks: [
+          { name: 'a', expectedType: 'int', expectedValue: 3 },
+          { name: 'b', expectedType: 'int', expectedValue: 6 },
+          { name: 'average', expectedType: 'float', expectedValue: 4.5 },
+        ],
+      },
+      {
+        id: 'case-2-2',
+        description: 'Ввод 2 и 2',
+        stdin: '2\n2\n',
+        expectedStdout: 'Среднее: 1.0',
+        variableChecks: [{ name: 'average', expectedType: 'float', expectedValue: 1.0 }],
+      },
+    ],
+    hiddenTests: [],
+    hints: [
+      'Деление / в Python даёт float даже для целых.',
+      'average = (a + b) / 2',
+      'Формат вывода: f"Среднее: {average}"',
     ],
   },
 };

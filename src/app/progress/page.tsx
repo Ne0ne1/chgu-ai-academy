@@ -1,17 +1,20 @@
-import { Breadcrumbs } from '@/components/ui';
-import { ProgressPanel } from '@/components/learning/progress-panel';
+import Link from 'next/link';
+import { ProgressTabs } from '@/components/learning/progress-tabs';
 
 export const metadata = { title: 'Прогресс' };
 
 export default function Page() {
   return (
-    <div className="narrow-page">
-      <Breadcrumbs items={[{ label: 'Моё обучение', href: '/' }, { label: 'Прогресс' }]} />
+    <div className="progress-page">
+      <p className="back-row">
+        <Link className="text-link" href="/">
+          Назад
+        </Link>
+      </p>
       <header className="page-title">
         <h1>Прогресс</h1>
-        <p>Принятые задачи, баллы и подтверждённые навыки.</p>
       </header>
-      <ProgressPanel />
+      <ProgressTabs />
     </div>
   );
 }

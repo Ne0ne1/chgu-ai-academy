@@ -9,6 +9,9 @@ export interface ProgramExample {
 const EXPLANATIONS: Record<string, string[]> = {
   'study-plan': ['5 дней × 3 часа = 15 часов', '4 дня × 2 часа = 8 часов'],
   'session-minutes': ['25 минут × 3 сессии = 75 минут', '10 минут × 3 сессии = 30 минут'],
+  'name-greeting': ['Имя Амина подставляется в приветствие', 'Имя Иса подставляется в приветствие'],
+  'next-year': ['18 + 1 = 19', '20 + 1 = 21'],
+  'two-average': ['(3 + 6) / 2 = 4.5', '(2 + 2) / 2 = 1.0'],
 };
 
 function defaultExplanation(test: TestCase, index: number): string {

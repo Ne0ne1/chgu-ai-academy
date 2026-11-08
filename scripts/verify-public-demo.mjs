@@ -34,6 +34,8 @@ async function main() {
   await page.waitForURL(/\/learn\/python\/variables/, { timeout: 30000 });
   note('LESSON opened');
   await page.screenshot({ path: path.join(evidence, 'lesson.png') });
+  await page.getByRole('link', { name: /План на неделю/ }).click();
+  await page.waitForURL(/\/practice\/variables/, { timeout: 30000 });
 
   // Pyodide assets over HTTPS
   const worker = await page.request.get(base + '/python/runtime-worker.mjs');
@@ -61,7 +63,7 @@ async function main() {
     'total_hours = 15',
     'print("За неделю: 15 ч")',
   ].join('\n'));
-  await page.getByRole('button', { name: 'Проверить' }).click();
+  await page.getByRole('button', { name: 'Отправить решение' }).click();
   await page.getByText(/Пока не принято/).waitFor({ timeout: 90000 });
   note('WRONG attempt rejected');
 
@@ -77,7 +79,7 @@ async function main() {
     'total_hours = days * hours_per_day',
     'print(f"За неделю: {total_hours} ч")',
   ].join('\n'));
-  await page.getByRole('button', { name: 'Проверить' }).click();
+  await page.getByRole('button', { name: 'Отправить решение' }).click();
   await page.getByText(/Решение принято/).waitFor({ timeout: 90000 });
   note('CORRECT attempt accepted');
   await page.screenshot({ path: path.join(evidence, 'practice-success.png') });

@@ -125,11 +125,7 @@ async function main() {
     await page.getByRole('link', { name: /Переменные и типы данных/ }).first().click();
     await page.waitForURL(/\/learn\/python\/variables/);
 
-    await page.locator('details.lesson-help > summary').click();
-    await page.getByRole('button', { name: 'Получить объяснение' }).click();
-    await page.getByText(/Режим: подготовленные подсказки|Режим: локальная модель/).waitFor({ timeout: 30_000 });
-
-    await page.getByRole('link', { name: 'К заданиям' }).click();
+    await page.getByRole('link', { name: /План на неделю/ }).click();
     await page.waitForURL(/\/practice\/variables/);
     await waitForRuntime(page);
 
@@ -139,16 +135,16 @@ async function main() {
       'total_hours = 15',
       'print("За неделю: 15 ч")',
     ].join('\n'));
-    await page.getByRole('button', { name: 'Проверить' }).click();
+    await page.getByRole('button', { name: 'Отправить решение' }).click();
     await page.getByText(/Пока не принято/).waitFor({ timeout: 60_000 });
 
     await page.locator('details.practice-help > summary').click();
     await page.getByText(/каким действием найти сумму/i).waitFor();
-    await page.getByRole('button', { name: 'Помощь по ошибке' }).click();
+    await page.getByRole('button', { name: 'Разобрать ошибку' }).click();
     await page.getByText(/Режим: подготовленные подсказки|Режим: локальная модель/).waitFor({ timeout: 30_000 });
-    await page.locator('.practice-help, .mentor-teaching, .help-after-error').getByText(/Следующий шаг|Проверьте себя|вычисл|имя|вход/i).first().waitFor();
+    await page.locator('.practice-mentor, .mentor-teaching, .help-after-error').getByText(/Следующий шаг|Проверьте себя|вычисл|имя|вход/i).first().waitFor();
 
-    // Change code while a check is in flight — must not record Attempt/Mastery
+    // Change code while a submit is in flight — must not record Attempt/Mastery
     const goodCode = [
       'days = int(input())',
       'hours_per_day = int(input())',
@@ -157,19 +153,19 @@ async function main() {
     ].join('\n');
     const slowGoodCode = ['import time', 'time.sleep(1.5)', goodCode].join('\n');
     await setEditorCode(page, slowGoodCode);
-    await page.getByRole('button', { name: 'Проверить' }).click();
+    await page.getByRole('button', { name: 'Отправить решение' }).click();
     await delay(300);
     await page.locator('textarea.plain-editor').fill(`${goodCode}\n# edited during check\n`);
     await page.getByText(/Проверка не сохранена/).waitFor({ timeout: 60_000 });
 
-    // Re-check current code
+    // Submit current code
     await setEditorCode(page, goodCode);
-    await page.getByRole('button', { name: 'Проверить' }).click();
+    await page.getByRole('button', { name: 'Отправить решение' }).click();
     await page.getByText(/Решение принято/).waitFor({ timeout: 60_000 });
 
     // Edit after completed check — prior result stays visible as saved snapshot
     await page.locator('textarea.plain-editor').fill(`${goodCode}\n# after\n`);
-    await page.getByText(/уже сохранённому снимку|изменился после последней проверки/i).waitFor();
+    await page.getByText(/изменился после проверки/i).waitFor();
     await setEditorCode(page, goodCode);
     await page.getByRole('link', { name: /Следующая задача/ }).click();
     await page.waitForURL(/\/practice\/variables-transfer/);
@@ -181,26 +177,26 @@ async function main() {
       'total_minutes = minutes * 3',
       'print(f"Три сессии: {total_minutes} мин")',
     ].join('\n'));
-    await page.getByRole('button', { name: 'Проверить' }).click();
+    await page.getByRole('button', { name: 'Отправить решение' }).click();
     await page.getByText(/Решение принято/).waitFor({ timeout: 60_000 });
-    await page.getByRole('link', { name: /К модулю/ }).click();
+    await page.getByRole('link', { name: /^Назад$/ }).click();
     await page.waitForURL(/\/modules\/python/);
 
     await page.goto(`${base}/progress`);
-    await page.getByRole('heading', { name: 'Подтверждённый результат', exact: true }).waitFor();
+    await page.getByRole('tab', { name: /Мои результаты/ }).click();
     await page.getByText('План на учебную неделю').waitFor();
-    await page.locator('.progress-simple').getByText(/Баллы:\s*200/).waitFor();
+    await page.locator('.progress-points-line').getByText('200').waitFor();
 
     // Reset learning data
     page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Сбросить учебные данные' }).click();
-    await page.getByRole('heading', { name: 'Пока нет проверенных решений' }).waitFor();
+    await page.getByText(/Пока нет принятых задач/).waitFor();
 
     // Reload persistence path with a fresh pass + draft
     await page.goto(`${base}/practice/variables`);
     await waitForRuntime(page);
     await setEditorCode(page, goodCode);
-    await page.getByRole('button', { name: 'Проверить' }).click();
+    await page.getByRole('button', { name: 'Отправить решение' }).click();
     await page.getByText(/Решение принято/).waitFor({ timeout: 60_000 });
 
     await page.goto(`${base}/practice/variables`);

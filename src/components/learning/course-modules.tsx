@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getModule, moduleExerciseKeys, type CourseId } from '@/content/academy';
+import { moduleBlurbs, moduleDemoProgress } from '@/content/module-blurbs';
 import { exercises } from '@/content/lessons';
 import { acceptedExerciseIds } from '@/lib/learning/progress';
 import { readLearningState } from '@/lib/learning/storage';
@@ -44,22 +45,36 @@ export function CourseModules({
   }, [courseId, moduleIds]);
 
   return (
-    <ul className="course-module-list">
+    <ul className={`course-module-grid cols-${moduleIds.length}`}>
       {moduleIds.map((moduleId) => {
         const module = getModule(moduleId);
         if (!module) return null;
-        const progress = acceptedByModule[moduleId] ?? { accepted: 0, total: moduleExerciseKeys(moduleId).length };
-        const hasTasks = progress.total > 0;
+        const real = acceptedByModule[moduleId] ?? {
+          accepted: 0,
+          total: moduleExerciseKeys(moduleId).length,
+        };
+        const useDemo = real.total === 0;
+        const demo = moduleDemoProgress[moduleId] ?? { accepted: 0, total: 1 };
+        const shown = useDemo ? demo : real;
+        const percent = shown.total > 0 ? Math.round((shown.accepted / shown.total) * 100) : 0;
 
         return (
           <li key={moduleId}>
-            <Link className="course-module-row" href={`/modules/${moduleId}`}>
-              <span className="course-module-title">{module.title}</span>
-              {hasTasks ? (
-                <span className="course-module-meta">
-                  {progress.accepted}/{progress.total}
-                </span>
-              ) : null}
+            <Link className="module-card" href={`/modules/${moduleId}`}>
+              <h2>{module.title.replace(' · выпускной проект', '')}</h2>
+              <p>{moduleBlurbs[moduleId] ?? module.summary}</p>
+              <div className="module-card-foot">
+                {useDemo ? (
+                  <span className="demo-chip">Демо · {shown.accepted}/{shown.total}</span>
+                ) : (
+                  <span>
+                    {shown.accepted}/{shown.total}
+                  </span>
+                )}
+                <div className="course-card-progress" aria-hidden="true">
+                  <span style={{ width: `${percent}%` }} />
+                </div>
+              </div>
             </Link>
           </li>
         );
