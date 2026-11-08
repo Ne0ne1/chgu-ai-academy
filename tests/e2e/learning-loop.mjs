@@ -118,7 +118,7 @@ async function main() {
     await page.evaluate(() => localStorage.removeItem('chgu-ai-academy:learning:v1'));
     await page.reload();
     await page.getByRole('heading', { name: 'Моё обучение' }).waitFor();
-    await page.getByRole('link', { name: /^Начать$/ }).click();
+    await page.getByRole('link', { name: /Основы Python/ }).click();
     await page.waitForURL(/\/learn\/python\/variables/);
 
     await page.locator('details.lesson-help > summary').click();
@@ -208,7 +208,8 @@ async function main() {
     }
 
     await page.goto(`${base}/`);
-    await page.getByRole('link', { name: /^Продолжить$/ }).waitFor();
+    await page.getByRole('link', { name: /Основы Python/ }).waitFor();
+    await page.getByText(/\d+\/\d+ задач зачтено/).waitFor();
 
     // Infinite loop / timeout
     await page.goto(`${base}/practice/variables`);

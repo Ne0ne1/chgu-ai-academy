@@ -10,48 +10,44 @@ export function CourseCard() {
   const [accepted, setAccepted] = useState(0);
   const [total, setTotal] = useState(2);
   const [href, setHref] = useState(`/learn/${variablesLesson.slug}`);
-  const [label, setLabel] = useState('Начать');
-  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const { state } = readLearningState();
     const progress = courseExerciseProgress(state);
     setAccepted(progress.accepted);
     setTotal(progress.total);
-    const learningStarted = hasStartedLearning(state);
-    setStarted(learningStarted);
-    if (learningStarted) {
-      setLabel('Продолжить');
+    if (hasStartedLearning(state)) {
       setHref(continueHref(state));
     } else {
-      setLabel('Начать');
       setHref(`/learn/${variablesLesson.slug}`);
     }
   }, []);
 
+  const percent = total > 0 ? Math.round((accepted / total) * 100) : 0;
+
   return (
-    <article className="course-card">
-      <div className="course-card-body">
-        <p className="course-card-kicker">Курс · доступен</p>
-        <h2 className="course-card-title">Основы Python</h2>
-        <p className="course-card-desc">
-          Урок «{variablesLesson.title}», затем две задачи с проверкой в браузере.
-        </p>
-        <p className="course-card-meta">
-          Прогресс: {accepted}/{total} задач
-        </p>
+    <Link
+      className="course-card course-card-link"
+      href={href}
+      aria-label={`Основы Python, ${accepted} из ${total} задач зачтено`}
+    >
+      <p className="course-card-badge">
+        {accepted}/{total} задач зачтено
+      </p>
+      <h2 className="course-card-title">Основы Python</h2>
+      <p className="course-card-desc">
+        Урок «{variablesLesson.title}», затем две задачи с проверкой в браузере.
+      </p>
+      <div
+        className="course-card-progress"
+        role="progressbar"
+        aria-valuenow={accepted}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-label={`Прогресс курса: ${accepted} из ${total}`}
+      >
+        <span style={{ width: `${percent}%` }} />
       </div>
-      <div className="course-card-actions">
-        <Link className="button" href={href}>
-          {label}
-        </Link>
-        <Link className="text-link" href="/program">
-          Обзор курса
-        </Link>
-        {started && accepted === total && total > 0 && (
-          <p className="small muted">Все доступные задачи приняты.</p>
-        )}
-      </div>
-    </article>
+    </Link>
   );
 }

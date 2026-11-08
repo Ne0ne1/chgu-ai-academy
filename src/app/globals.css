@@ -132,21 +132,50 @@ input[type="radio"] { accent-color: var(--accent); width: 16px; height: 16px; }
 .page-title p { font-size: 1rem; max-width: 720px; }
 .page-title .eyebrow { margin-bottom: 10px; }
 
-/* Cabinet home */
-.cabinet-home { padding-top: clamp(24px, 4vw, 40px); max-width: 720px; }
+/* Cabinet home — LMS-style course cards (organization only, not Yandex brand) */
+.cabinet-home { padding-top: clamp(24px, 4vw, 40px); max-width: 640px; }
 .cabinet-home-header { margin-bottom: var(--space-3); }
 .cabinet-home-header h1 { font-size: clamp(1.6rem, 1.5vw + 1rem, 2rem); }
 .course-card {
-  display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3);
-  padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--raised);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--raised);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent);
 }
-.course-card-kicker { font-size: 0.8125rem; color: var(--muted); margin-bottom: 6px; }
-.course-card-title { font-size: 1.35rem; margin-bottom: 8px; }
-.course-card-desc { color: var(--muted); max-width: 40ch; margin-bottom: 10px; font-size: 0.95rem; }
-.course-card-meta { color: var(--ink); font-size: 0.9rem; font-weight: 550; }
-.course-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 140px; }
-.cabinet-plan { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--line); }
-.cabinet-plan h2 { font-size: 1.1rem; margin-bottom: 12px; }
+.course-card-link {
+  text-decoration: none; color: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.course-card-link:hover {
+  border-color: color-mix(in oklab, var(--accent) 35%, var(--line));
+  box-shadow: 0 6px 18px color-mix(in oklab, var(--ink) 6%, transparent);
+}
+.course-card-link:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px;
+}
+.course-card-badge {
+  display: inline-flex; align-self: flex-start;
+  margin: 0; padding: 4px 10px;
+  border-radius: 999px; background: color-mix(in oklab, var(--ink) 6%, var(--raised));
+  color: var(--muted); font-size: 0.75rem; font-weight: 550; letter-spacing: 0.01em;
+}
+.course-card-title { font-size: 1.2rem; margin: 0; line-height: 1.3; }
+.course-card-desc { color: var(--muted); margin: 0; font-size: 0.92rem; line-height: 1.45; }
+.course-card-progress {
+  margin-top: 6px; height: 3px; border-radius: 999px;
+  background: color-mix(in oklab, var(--ink) 8%, var(--raised)); overflow: hidden;
+}
+.course-card-progress > span {
+  display: block; height: 100%; border-radius: inherit; background: var(--accent);
+}
+.course-card-planned { opacity: 0.78; cursor: default; }
+.course-card-planned .course-card-title { font-size: 1.05rem; color: var(--ink); }
+.cabinet-plan { margin-top: var(--space-4); }
+.cabinet-plan h2 { font-size: 1.05rem; margin-bottom: 14px; color: var(--muted); font-weight: 550; }
+.cabinet-module-list {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 12px;
+}
 .cabinet-plan-list { list-style: none; margin: 0; padding: 0; }
 .cabinet-plan-list li {
   display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
@@ -368,9 +397,8 @@ progress { width: 100%; height: 5px; accent-color: var(--accent); }
   .brand { font-size: 0.95rem; }
   .profile-name { max-width: 12ch; overflow: hidden; text-overflow: ellipsis; }
   .user-popover { top: 44px; }
-  .course-card { padding: 18px; }
-  .course-card-actions { width: 100%; }
-  .course-card-actions .button { width: 100%; justify-content: center; }
+  .course-card { padding: 16px; }
+  .cabinet-home { max-width: none; }
   .breadcrumbs { padding: 20px 0; gap: 5px; font-size: 0.75rem; }
   .page-title { margin: 8px 0 20px; }
   .module > summary { gap: 12px; flex-wrap: wrap; padding: 16px 0; }

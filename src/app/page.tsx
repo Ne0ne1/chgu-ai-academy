@@ -19,11 +19,14 @@ export default function Home() {
 
       <section className="cabinet-plan" aria-labelledby="plan-title">
         <h2 id="plan-title">Дальше по плану</h2>
-        <ul className="cabinet-plan-list">
+        <ul className="cabinet-module-list">
           {planned.map((module) => (
-            <li key={module.id}>
-              <span className="cabinet-plan-name">{module.title}</span>
-              <span className="cabinet-plan-status">Пока недоступен</span>
+            <li key={module.id} className="course-card course-card-planned" aria-disabled="true">
+              <p className="course-card-badge">Пока недоступен</p>
+              <p className="course-card-title">{module.title}</p>
+              <div className="course-card-progress" aria-hidden="true">
+                <span style={{ width: '0%' }} />
+              </div>
             </li>
           ))}
         </ul>
