@@ -48,32 +48,67 @@ export function preparedLessonHelp(lessonId: string, sectionId?: string, questio
   };
 }
 
-export function preparedPracticeHelp(issue?: MentorIssuePayload, hasAttempt = false): {
+const PRACTICE_ANCHOR_BY_LESSON: Record<string, Record<string, string>> = {
+  conditions: {
+    '#names': '#compare',
+    '#types': '#bool',
+    '#conversion': '#branch',
+    '#mistakes': '#mistakes',
+  },
+};
+
+function remapPracticeAnchor(lessonId: string | undefined, anchor: string): string {
+  const normalized = anchor.startsWith('#') ? anchor : `#${anchor}`;
+  if (!lessonId) return normalized;
+  return PRACTICE_ANCHOR_BY_LESSON[lessonId]?.[normalized] ?? normalized;
+}
+
+export function preparedPracticeHelp(
+  issue?: MentorIssuePayload,
+  hasAttempt = false,
+  lessonId?: string,
+): {
   text: string;
   lessonAnchor: string;
 } {
   if (!hasAttempt || !issue) {
+    const orientation =
+      lessonId === 'conditions'
+        ? 'Общая ориентация: прочитайте вход, сравните значения, выберите ветку if/else и выведите результат решения.'
+        : 'Общая ориентация: прочитайте входные данные, сохраните их под понятными именами, выполните нужное действие и соберите вывод через f-строку.';
     return {
       text: [
         'Пока нет результата проверки. Сначала попробуйте решить задачу самостоятельно, затем нажмите «Проверить».',
-        'Общая ориентация: прочитайте входные данные, сохраните их под понятными именами, выполните нужное действие и соберите вывод через f-строку.',
+        orientation,
         'Готовое решение здесь не приводится — это часть обучения.',
       ].join('\n\n'),
-      lessonAnchor: '#conversion',
+      lessonAnchor: remapPracticeAnchor(lessonId, lessonId === 'conditions' ? '#branch' : '#conversion'),
     };
   }
 
   const mapped = practiceErrorSupport[issue.kind] ?? practiceErrorSupport.default;
   const anchor = issue.lessonAnchor ?? mapped.lessonAnchor;
+  const explanation =
+    lessonId === 'conditions' && issue.kind === 'variable_value'
+      ? 'Тип подходит, но значение не совпало с входом теста. Часто печатают константу вместо ветвления или путают порог сравнения.'
+      : mapped.explanation;
+  const nextStep =
+    lessonId === 'conditions' && issue.kind === 'variable_value'
+      ? 'Возьмите один набор входных данных и вручную определите, какая ветка должна сработать, затем сверьте условие в коде.'
+      : mapped.nextStep;
+  const checkQuestion =
+    lessonId === 'conditions' && issue.kind === 'variable_value'
+      ? 'Для этого входа условие истинно или ложно?'
+      : mapped.checkQuestion;
   return {
     text: [
-      mapped.explanation,
-      `Следующий шаг: ${mapped.nextStep}`,
-      mapped.checkQuestion ? `Проверьте себя: ${mapped.checkQuestion}` : '',
+      explanation,
+      `Следующий шаг: ${nextStep}`,
+      checkQuestion ? `Проверьте себя: ${checkQuestion}` : '',
     ]
       .filter(Boolean)
       .join('\n\n'),
-    lessonAnchor: anchor.startsWith('#') ? anchor : `#${anchor}`,
+    lessonAnchor: remapPracticeAnchor(lessonId, anchor),
   };
 }
 
@@ -82,7 +117,7 @@ export function buildPreparedResponse(request: MentorRequestBody): {
   lessonAnchor: string;
 } {
   if (request.context === 'practice') {
-    return preparedPracticeHelp(request.lastIssue, Boolean(request.hasAttempt));
+    return preparedPracticeHelp(request.lastIssue, Boolean(request.hasAttempt), request.lessonId);
   }
   return preparedLessonHelp(request.lessonId, request.sectionId, request.question);
 }

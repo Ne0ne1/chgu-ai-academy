@@ -1,0 +1,11 @@
+PROGRAM status=200
+LESSON opened
+RUNTIME Python готов. «Запустить» показывает вывод; «Проверить» оценивает решение.
+WRONG attempt rejected
+PREPARED help shown
+CORRECT practice-pass accepted
+CORRECT study-mode accepted
+PROGRESS shows accepted conditions tasks
+PROGRESS persists after reload
+MOBILE 390px lesson ok
+DONE conditions path

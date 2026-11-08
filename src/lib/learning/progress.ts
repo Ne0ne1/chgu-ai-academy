@@ -125,6 +125,9 @@ export function skillLabel(skillId: string): string {
     'python.arithmetic': 'Арифметика',
     'python.fstrings': 'f-строки',
     'python.conversion': 'Преобразование типов',
+    'python.conditions': 'Условия',
+    'python.bool': 'Логика',
+    'python.comparisons': 'Сравнения',
   };
   return labels[skillId] ?? skillId;
 }

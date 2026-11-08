@@ -14,7 +14,7 @@ export default function Program() {
     <div className="module-list">{modules.map((module, index) => {
       const available = module.topics.filter(topic => topic.status === 'available' && topic.lessonSlug && lessons[topic.lessonSlug]).length;
       return <details id={module.id} className="module" key={module.id} open={index === 0}>
-        <summary><span className="module-number">{module.number}</span><div><h2>{module.title}</h2><p>Месяц {module.months} · {module.summary}</p></div><span className="module-availability">{available ? `${available} урок доступен` : 'Планируется'}</span><ChevronDown size={16}/></summary>
+        <summary><span className="module-number">{module.number}</span><div><h2>{module.title}</h2><p>Месяц {module.months} · {module.summary}</p></div><span className="module-availability">{available ? (available === 1 ? '1 урок доступен' : `${available} урока доступны`) : 'Планируется'}</span><ChevronDown size={16}/></summary>
         <div className="module-body"><p className="module-outcome">Результат модуля: {module.artifact.toLowerCase()}.</p>
           <ol className="topic-list">{module.topics.map(topic => {
             const lesson = topic.lessonSlug ? lessons[topic.lessonSlug] : undefined;

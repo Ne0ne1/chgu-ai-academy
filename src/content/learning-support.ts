@@ -15,6 +15,56 @@ export interface LessonSupportTopic {
 }
 
 export const lessonSupport: Record<string, LessonSupportTopic[]> = {
+  conditions: [
+    {
+      sectionId: 'compare',
+      title: 'Сравнения',
+      explanation:
+        'Сравнение задаёт вопрос к данным и отвечает True или False. Порог «не меньше» записывается как >=. Один знак = присваивает, два == сравнивают.',
+      example: 'score = 60\nprint(score >= 60)',
+      checkQuestion: 'Чем == отличается от = в строке if score = 60?',
+    },
+    {
+      sectionId: 'bool',
+      title: 'Логические значения',
+      explanation:
+        'True и False — не текст. Если вход кодирует дождь числом 1 или 0, сравнивайте с числом явно: is_rainy == 1.',
+      example: 'is_rainy = 0\nprint(is_rainy == 0)',
+      checkQuestion: 'Почему "True" в кавычках — это не то же самое, что True?',
+    },
+    {
+      sectionId: 'branch',
+      title: 'if и else',
+      explanation:
+        'После if нужно двоеточие и отступ. else ловит все случаи, когда условие ложно. Создайте одно имя результата в обеих ветках, затем выведите его один раз.',
+      example: 'x = 50\nif x >= 60:\n    decision = "Допуск"\nelse:\n    decision = "Повторить"\nprint(decision)',
+      checkQuestion: 'Что произойдёт, если забыть двоеточие после if?',
+    },
+    {
+      sectionId: 'elif',
+      title: 'Цепочка elif',
+      explanation:
+        'elif проверяется только если предыдущие условия ложны. Первая подходящая ветка выполняется, остальные пропускаются.',
+      example: 'n = 2\nif n == 1:\n    print("один")\nelif n == 2:\n    print("два")\nelse:\n    print("другое")',
+      checkQuestion: 'Почему порядок условий влияет на результат?',
+    },
+    {
+      sectionId: 'logic',
+      title: 'and / or / not',
+      explanation:
+        'and требует истинности обоих условий. or — хотя бы одного. Сначала скажите правило словами, потом переведите в код.',
+      example: 'warm = True\ndry = False\nprint(warm and dry)\nprint(warm or dry)',
+      checkQuestion: 'Когда выражение A and B будет False, если A уже True?',
+    },
+    {
+      sectionId: 'mistakes',
+      title: 'Ошибки в ветвлениях',
+      explanation:
+        'SyntaxError и IndentationError чаще всего из‑за двоеточия и отступов. Если вывод константа при разных входах — условие не пересчитывается.',
+      example: 'score = int(input())\nif score >= 60:\n    print("Допуск")\nelse:\n    print("Повторить")',
+      checkQuestion: 'Какой один факт из сообщения об ошибке вы можете подтвердить?',
+    },
+  ],
   variables: [
     {
       sectionId: 'names',

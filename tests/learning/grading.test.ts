@@ -5,6 +5,8 @@ import { runPythonNode } from './node-python-runner';
 
 const studyPlan = exercises.variables;
 const transfer = exercises['variables-transfer'];
+const practicePass = exercises.conditions;
+const studyMode = exercises['conditions-logic'];
 
 describe('grading with real Pyodide (node)', () => {
   it('accepts a correct study-plan solution across two input sets', async () => {
@@ -86,6 +88,57 @@ describe('grading with real Pyodide (node)', () => {
       'print("Три сессии: 75 мин")',
     ].join('\n');
     const fail = await gradeExercise(transfer, bad, runPythonNode);
+    expect(fail.passed).toBe(false);
+  });
+
+  it('accepts conditions pass exercise across threshold cases', async () => {
+    const code = [
+      'score = int(input())',
+      'if score >= 60:',
+      '    decision = "Допуск"',
+      'else:',
+      '    decision = "Повторить"',
+      'print(decision)',
+    ].join('\n');
+    const report = await gradeExercise(practicePass, code, runPythonNode);
+    expect(report.passed).toBe(true);
+    expect(report.testResults).toHaveLength(3);
+  });
+
+  it('rejects hardcoded decision for conditions exercise', async () => {
+    const code = [
+      'score = int(input())',
+      'decision = "Допуск"',
+      'print(decision)',
+    ].join('\n');
+    const report = await gradeExercise(practicePass, code, runPythonNode);
+    expect(report.passed).toBe(false);
+  });
+
+  it('accepts study-mode logic exercise and rejects one-sided condition', async () => {
+    const good = [
+      'temperature = int(input())',
+      'is_rainy = int(input())',
+      'if temperature >= 10 and is_rainy == 0:',
+      '    mode = "На улице"',
+      'else:',
+      '    mode = "В помещении"',
+      'print(mode)',
+    ].join('\n');
+    const ok = await gradeExercise(studyMode, good, runPythonNode);
+    expect(ok.passed).toBe(true);
+    expect(ok.testResults).toHaveLength(3);
+
+    const bad = [
+      'temperature = int(input())',
+      'is_rainy = int(input())',
+      'if temperature >= 10:',
+      '    mode = "На улице"',
+      'else:',
+      '    mode = "В помещении"',
+      'print(mode)',
+    ].join('\n');
+    const fail = await gradeExercise(studyMode, bad, runPythonNode);
     expect(fail.passed).toBe(false);
   });
 });

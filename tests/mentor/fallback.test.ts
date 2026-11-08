@@ -61,6 +61,34 @@ describe('mentor prepared help', () => {
     expect(help.text).not.toMatch(/Решение принято/);
   });
 
+  it('remaps practice anchors for the conditions lesson', () => {
+    const help = preparedPracticeHelp(
+      {
+        kind: 'variable_value',
+        message: 'Значение «decision» не совпало',
+        expected: 'Повторить',
+        actual: 'Допуск',
+        lessonAnchor: '#names',
+      },
+      true,
+      'conditions',
+    );
+    expect(help.lessonAnchor).toBe('#compare');
+    expect(help.text.toLowerCase()).toMatch(/ветвл|порог|услов/);
+    expect(help.text).not.toMatch(/decision = "Повторить"/);
+  });
+
+  it('serves conditions lesson help with section anchors', () => {
+    const help = buildPreparedResponse({
+      context: 'lesson',
+      lessonId: 'conditions',
+      sectionId: 'logic',
+    });
+    expect(help.lessonAnchor).toBe('#logic');
+    expect(help.text).toMatch(/and/);
+    expect(help.text).toMatch(/Проверьте себя/);
+  });
+
   it('lesson help includes example and a check question', () => {
     const help = buildPreparedResponse({
       context: 'lesson',

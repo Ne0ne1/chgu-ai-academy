@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { lessons } from '@/content/lessons';
+import { exercises, lessons } from '@/content/lessons';
 import { Action, Breadcrumbs } from '@/components/ui';
 import { CodeBlock, SelfCheck } from '@/components/interactions';
 import { LessonHelp } from '@/components/lesson-help';
@@ -20,7 +20,20 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const firstExerciseId = lesson.exercises[0];
   const practiceKey = firstExerciseId ? getExerciseRouteKey(firstExerciseId) : undefined;
   const practiceHref = practiceKey ? `/practice/${practiceKey}` : `/practice/${lesson.id}`;
-  const hasSecond = lesson.exercises.length > 1;
+  const exerciseTitles = lesson.exercises
+    .map((exerciseId) => Object.values(exercises).find((item) => item.id === exerciseId)?.title)
+    .filter((title): title is string => Boolean(title));
+  const reviewHref = lesson.sections.some((section) => section.id === 'types')
+    ? '#types'
+    : lesson.sections.some((section) => section.id === 'branch')
+      ? '#branch'
+      : undefined;
+  const practiceIntro =
+    exerciseTitles.length > 1
+      ? `Сначала решите «${exerciseTitles[0]}», затем «${exerciseTitles[1]}». Попробуйте самостоятельно, затем обращайтесь к подсказкам.`
+      : exerciseTitles.length === 1
+        ? `Решите задачу «${exerciseTitles[0]}». Попробуйте самостоятельно, затем обращайтесь к подсказкам.`
+        : 'Попробуйте решить задачу самостоятельно, затем обращайтесь к подсказкам.';
   return <><Breadcrumbs items={[{ label: 'Программа', href: '/program' }, { label: 'Основы Python', href: '/program#python' }, { label: lesson.title }]}/>
     <LessonObserver lessonId={lesson.id} sectionIds={lesson.sections.map((section) => section.id)}/>
     <div className="lesson-layout">
@@ -43,13 +56,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           {section.code && <CodeBlock code={section.code} output={section.output}/>}
           {section.note && <p className="lesson-note">{section.note}</p>}
         </section>)}
-        <SelfCheck check={lesson.selfCheck} reviewHref={lesson.sections.some(section => section.id === 'types') ? '#types' : undefined}/>
+        <SelfCheck check={lesson.selfCheck} reviewHref={reviewHref}/>
         <section className="lesson-section practice-next" id="practice"><h2>Теперь примените</h2>
-          <p>{hasSecond
-            ? 'Сначала решите задачу с учебным планом, затем задачу на перенос: преобразование текста в число.'
-            : 'Составьте учебный план с помощью переменных. Попробуйте решить задачу самостоятельно, затем обращайтесь к подсказкам.'}</p>
+          <p>{practiceIntro}</p>
           <Action href={practiceHref}>Перейти к практике</Action>
-          <p className="small muted">Проверка выполняется в браузере. Чтение урока само по себе освоение не подтверждает.</p>
+          <p className="small muted">Проверка выполняется в браузере. Чтение урока и подсказка сами по себе освоение не подтверждают.</p>
         </section>
         <details className="references"><summary>Источники и дополнительное чтение</summary>
           {lesson.references.map(reference => <div key={reference.url}><a href={reference.url} target="_blank" rel="noreferrer">{reference.title} ↗</a><p>{reference.attribution}</p></div>)}
