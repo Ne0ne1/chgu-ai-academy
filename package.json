@@ -1,0 +1,37 @@
+{
+  "name": "chgu-ai-academy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/prepare-editor.mjs && node scripts/prepare-pyodide.mjs",
+    "prepare:runtime": "node scripts/prepare-editor.mjs && node scripts/prepare-pyodide.mjs",
+    "test:learning": "vitest run --config vitest.config.ts",
+    "test:mentor": "vitest run --config vitest.config.ts tests/mentor",
+    "test:e2e": "tsx tests/e2e/learning-loop.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "lucide-react": "^0.468.0",
+    "monaco-editor": "^0.55.0",
+    "next": "^16.0.0",
+    "pyodide": "^0.27.7",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "playwright": "^1.55.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.4"
+  }
+}
