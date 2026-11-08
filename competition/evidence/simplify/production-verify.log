@@ -1,0 +1,12 @@
+HOME status=200
+LESSON opened
+PYODIDE worker=200 pyodide.mjs=200 https=true
+RUNTIME Python готов.
+WRONG attempt rejected
+PREPARED help shown
+CORRECT attempt accepted
+PROGRESS shows accepted task
+PROGRESS persists after reload
+MOBILE 390px home ok
+MOBILE practice runtime ready
+DONE https://chgu-ai-academy.vercel.app

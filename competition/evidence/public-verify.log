@@ -1,7 +1,7 @@
 HOME status=200
 LESSON opened
 PYODIDE worker=200 pyodide.mjs=200 https=true
-RUNTIME Python готов. «Запустить» показывает вывод; «Проверить» оценивает решение.
+RUNTIME Python готов.
 WRONG attempt rejected
 PREPARED help shown
 CORRECT attempt accepted
