@@ -24,10 +24,10 @@ async function main() {
 
   const home = await page.goto(base + '/', { waitUntil: 'networkidle', timeout: 60000 });
   note(`HOME status=${home?.status()}`);
-  await page.getByRole('heading', { name: 'CHGU AI Academy' }).waitFor();
+  await page.getByRole('heading', { name: /Учите Python|CHGU AI Academy/ }).first().waitFor();
   await page.screenshot({ path: path.join(evidence, 'home.png'), fullPage: true });
 
-  await page.getByRole('link', { name: /Начать обучение|Продолжить обучение|Попробовать/ }).first().click();
+  await page.getByRole('link', { name: /Попробовать урок|Продолжить обучение|Начать обучение|Попробовать/ }).first().click();
   await page.waitForURL(/\/learn\/python\/variables/, { timeout: 30000 });
   note('LESSON opened');
   await page.screenshot({ path: path.join(evidence, 'lesson.png') });
@@ -90,7 +90,7 @@ async function main() {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(base + '/');
-  await page.getByRole('heading', { name: 'CHGU AI Academy' }).waitFor();
+  await page.getByRole('heading', { name: /Учите Python|CHGU AI Academy/ }).first().waitFor();
   await page.screenshot({ path: path.join(evidence, 'home-mobile.png'), fullPage: true });
   note('MOBILE 390px home ok');
 
