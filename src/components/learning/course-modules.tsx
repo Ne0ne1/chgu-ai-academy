@@ -19,19 +19,28 @@ export function CourseModules({
   );
 
   useEffect(() => {
-    const { state } = readLearningState();
-    const acceptedSet = new Set(acceptedExerciseIds(state.attempts));
-    const next: Record<string, { accepted: number; total: number }> = {};
-    for (const moduleId of moduleIds) {
-      const keys = moduleExerciseKeys(moduleId);
-      let accepted = 0;
-      for (const key of keys) {
-        const exercise = exercises[key];
-        if (exercise && acceptedSet.has(exercise.id)) accepted += 1;
+    function refresh() {
+      const { state } = readLearningState();
+      const acceptedSet = new Set(acceptedExerciseIds(state.attempts));
+      const next: Record<string, { accepted: number; total: number }> = {};
+      for (const moduleId of moduleIds) {
+        const keys = moduleExerciseKeys(moduleId);
+        let accepted = 0;
+        for (const key of keys) {
+          const exercise = exercises[key];
+          if (exercise && acceptedSet.has(exercise.id)) accepted += 1;
+        }
+        next[moduleId] = { accepted, total: keys.length };
       }
-      next[moduleId] = { accepted, total: keys.length };
+      setAcceptedByModule(next);
     }
-    setAcceptedByModule(next);
+    refresh();
+    window.addEventListener('chgu-learning-updated', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.removeEventListener('chgu-learning-updated', refresh);
+      window.removeEventListener('focus', refresh);
+    };
   }, [courseId, moduleIds]);
 
   return (

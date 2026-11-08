@@ -196,6 +196,7 @@ export function writeLearningState(state: LearningStateV1): { ok: boolean; acces
   };
   try {
     window.localStorage.setItem(LEARNING_STORAGE_KEY, JSON.stringify(payload));
+    window.dispatchEvent(new Event('chgu-learning-updated'));
     return { ok: true, access: 'ok' };
   } catch (error) {
     const quota = error instanceof DOMException && (error.name === 'QuotaExceededError' || error.code === 22);

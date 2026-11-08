@@ -52,7 +52,11 @@ export function ModuleWorkspace({ moduleId }: { moduleId: string }) {
     }
     refresh();
     window.addEventListener('focus', refresh);
-    return () => window.removeEventListener('focus', refresh);
+    window.addEventListener('chgu-learning-updated', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('chgu-learning-updated', refresh);
+    };
   }, [exerciseKeys, lessonSlugs]);
 
   if (!module) return null;
