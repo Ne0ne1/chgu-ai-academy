@@ -27,7 +27,10 @@ async function main() {
   await page.getByRole('heading', { name: 'Моё обучение' }).waitFor();
   await page.screenshot({ path: path.join(evidence, 'home.png'), fullPage: true });
 
-  await page.getByRole('link', { name: /Основы Python/ }).first().click();
+  await page.getByRole('link', { name: /Python для AI/ }).first().click();
+  await page.waitForURL(/\/courses\/python/, { timeout: 30000 });
+  await page.getByRole('link', { name: /Первые программы/ }).click();
+  await page.getByRole('link', { name: /Открыть урок/ }).click();
   await page.waitForURL(/\/learn\/python\/variables/, { timeout: 30000 });
   note('LESSON opened');
   await page.screenshot({ path: path.join(evidence, 'lesson.png') });

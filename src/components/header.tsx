@@ -7,7 +7,7 @@ import { useTheme } from './theme-provider';
 import { buildProgressSnapshot, courseExerciseProgress } from '@/lib/learning/progress';
 import { readLearningState, resetLearningState } from '@/lib/learning/storage';
 
-const PROFILE_NAME = 'Иса Дадашев';
+const PROFILE_NAME = 'Гость';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -102,7 +102,7 @@ export function Header() {
           <div className="user-popover profile-panel">
             <div className="profile-panel-head">
               <p className="profile-panel-name">{PROFILE_NAME}</p>
-              <p className="small muted">Учебный профиль на этом устройстве</p>
+              <p className="small muted">Локальный профиль на этом устройстве. Без входа и синхронизации.</p>
             </div>
 
             <div className="profile-progress-block">
@@ -114,11 +114,19 @@ export function Header() {
                 Баллы: <strong>{points}</strong> / {pointsMax}
               </p>
               <p className="small muted">
-                100 баллов за каждую уникальную принятую задачу. Баллы учебного прототипа, не университетская оценка.
+                100 баллов за каждую уникальную принятую задачу. Баллы учебного прототипа, не оценка.
               </p>
-              <Link className="text-link" href="/progress" onClick={closeMenu}>
-                Подробный прогресс
-              </Link>
+              <nav className="profile-links" aria-label="Разделы профиля">
+                <Link className="text-link" href="/progress" onClick={closeMenu}>
+                  Подробный прогресс
+                </Link>
+                <Link className="text-link" href="/skills" onClick={closeMenu}>
+                  Карта навыков
+                </Link>
+                <Link className="text-link" href="/rating" onClick={closeMenu}>
+                  Демо рейтинга
+                </Link>
+              </nav>
             </div>
 
             <fieldset className="theme-options">

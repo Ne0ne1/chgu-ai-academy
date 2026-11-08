@@ -37,6 +37,45 @@ export function courseExerciseProgress(state: LearningStateV1): {
   return { accepted: acceptedTitles.length, total: keys.length, titles: acceptedTitles };
 }
 
+export type TaskRowStatus = 'not_started' | 'has_error' | 'accepted';
+
+export function taskRowStatus(exerciseId: string, state: LearningStateV1): TaskRowStatus {
+  const accepted = new Set(acceptedExerciseIds(state.attempts));
+  if (accepted.has(exerciseId)) return 'accepted';
+  const related = state.attempts.filter((attempt) => attempt.exerciseId === exerciseId);
+  if (related.length === 0) return 'not_started';
+  const latest = related[related.length - 1];
+  return latest.passed ? 'accepted' : 'has_error';
+}
+
+export function taskRowLabel(status: TaskRowStatus): string {
+  switch (status) {
+    case 'accepted':
+      return 'Принято';
+    case 'has_error':
+      return 'Есть ошибка';
+    default:
+      return 'Не начато';
+  }
+}
+
+export function recentAttemptsForExercise(exerciseId: string, state: LearningStateV1, limit = 5) {
+  return state.attempts
+    .filter((attempt) => attempt.exerciseId === exerciseId)
+    .slice(-limit)
+    .reverse();
+}
+
+export function blockExerciseProgress(exerciseKeys: string[], state: LearningStateV1) {
+  const accepted = new Set(acceptedExerciseIds(state.attempts));
+  let done = 0;
+  for (const key of exerciseKeys) {
+    const exercise = exercises[key];
+    if (exercise && accepted.has(exercise.id)) done += 1;
+  }
+  return { accepted: done, total: exerciseKeys.length };
+}
+
 /** Accepted exercises are derived only from stored valid evidence attempts. */
 export function acceptedExerciseIds(attempts: Attempt[]): string[] {
   const ids: string[] = [];
@@ -97,10 +136,10 @@ export function buildProgressSnapshot(state: LearningStateV1, storageMessage?: s
       href: `/practice/${firstIncomplete[0]}`,
     };
   } else if (accepted.length > 0) {
-    nextStep = { label: 'К курсу', href: '/program' };
+    nextStep = { label: 'К курсу', href: '/courses/python' };
   } else {
     const lesson = lessons['python/variables'];
-    nextStep = { label: 'Начать', href: `/learn/${lesson.slug}` };
+    nextStep = { label: 'Открыть курс', href: '/courses/python' };
   }
 
   if (state.lastLocation) {
@@ -143,7 +182,7 @@ export function nextStepAfterPass(exerciseKey: string): { label: string; href: s
   if (nextKey) {
     return { label: `Следующая задача: ${exercises[nextKey].title}`, href: `/practice/${nextKey}` };
   }
-  return { label: 'К курсу', href: '/program' };
+  return { label: 'К курсу', href: '/courses/python' };
 }
 
 export function skillLabel(skillId: string): string {

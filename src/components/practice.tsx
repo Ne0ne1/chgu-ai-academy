@@ -9,11 +9,12 @@ import { gradeExercise, type GradeReport } from '@/lib/grading/grade';
 import { lessonHref, type GradeIssue } from '@/lib/grading/feedback';
 import { usePythonRuntime } from '@/hooks/use-python-runtime';
 import { useLearningStore } from '@/hooks/use-learning-store';
-import { nextStepAfterPass } from '@/lib/learning/progress';
+import { nextStepAfterPass, recentAttemptsForExercise } from '@/lib/learning/progress';
 import type { RuntimeRunResult } from '@/lib/runtime/contracts';
 import { askMentor } from '@/components/mentor/ask-mentor';
 import { MentorAnswerText, MentorModeLabel } from '@/components/mentor/mentor-answer';
 import type { MentorMode } from '@/lib/mentor/contracts';
+import { isValidEvidence } from '@/lib/learning/evidence';
 
 const CodeEditor = dynamic(() => import('@/components/code-editor'), {
   ssr: false,
@@ -38,16 +39,61 @@ function statusText(status: string, detail: string, storageMessage?: string): st
   }
 }
 
-function IssueList({ issues }: { issues: GradeIssue[] }) {
+function IssueList({
+  issues,
+  stdin,
+  nextHint,
+}: {
+  issues: GradeIssue[];
+  stdin?: string;
+  nextHint: string;
+}) {
   if (issues.length === 0) return null;
   const issue = issues[0];
+  const tech = issue.actual && /Error|Traceback|File "/i.test(issue.actual) ? issue.actual : undefined;
   return (
     <div className="issue-primary">
-      <p>{issue.message}</p>
-      {(issue.expected !== undefined || issue.actual !== undefined) && (
-        <p className="small muted">
-          Ожидалось: {issue.expected ?? '—'} · Получено: {issue.actual ?? '—'}
-        </p>
+      <dl className="verdict-grid">
+        <div>
+          <dt>Тест</dt>
+          <dd>{issue.testId}</dd>
+        </div>
+        {stdin !== undefined && (
+          <div>
+            <dt>Входные данные</dt>
+            <dd>
+              <pre>{stdin.trim() || '(пусто)'}</pre>
+            </dd>
+          </div>
+        )}
+        {issue.expected !== undefined && (
+          <div>
+            <dt>Ожидалось</dt>
+            <dd>
+              <pre>{issue.expected}</pre>
+            </dd>
+          </div>
+        )}
+        {issue.actual !== undefined && (
+          <div>
+            <dt>Получилось</dt>
+            <dd>
+              <pre>{tech ? '(см. технические подробности)' : issue.actual}</pre>
+            </dd>
+          </div>
+        )}
+      </dl>
+      <p>
+        <strong>Почему:</strong> {issue.message}
+      </p>
+      <p>
+        <strong>Следующий шаг:</strong> {nextHint}
+      </p>
+      {tech && (
+        <details className="help-tech">
+          <summary>Технические подробности</summary>
+          <pre>{tech}</pre>
+        </details>
       )}
     </div>
   );
@@ -106,6 +152,13 @@ export function Practice({
     busy || status === 'error' || status === 'unavailable' || status === 'idle' || status === 'loading';
   const primaryIssue = grade && !grade.passed ? grade.issues[0] : undefined;
   const hasFailedAttempt = Boolean(grade && !grade.passed && !staleCheck);
+  const failedTest = primaryIssue
+    ? [...exercise.visibleTests, ...exercise.hiddenTests].find((test) => test.id === primaryIssue.testId)
+    : undefined;
+  const attemptHistory = useMemo(
+    () => (hydrated ? recentAttemptsForExercise(exercise.id, state, 5) : []),
+    [hydrated, exercise.id, state],
+  );
 
   function download() {
     const url = URL.createObjectURL(new Blob([code], { type: 'text/x-python;charset=utf-8' }));
@@ -197,14 +250,6 @@ export function Practice({
           {exercise.visibleTests[0]?.expectedStdout ?? 'Указан в условии задания'}
         </pre>
         <p className="small muted">Пример для первого набора входов. Проверка использует несколько наборов.</p>
-
-        {hasFailedAttempt && (
-          <div className="practice-next-step" role="status">
-            <p>
-              <strong>Следующий шаг:</strong> исправьте код по причине в результате и снова нажмите «Проверить».
-            </p>
-          </div>
-        )}
 
         <details className="practice-help">
           <summary>Подсказка</summary>
@@ -374,7 +419,11 @@ export function Practice({
             </div>
           )}
           {grade && (
-            <div className={`grade-output ${grade.passed && !staleCheck ? 'is-ok' : 'is-error'}`} role="status">
+            <div
+              className={`grade-output current-verdict ${grade.passed && !staleCheck ? 'is-ok' : 'is-error'}`}
+              role="status"
+            >
+              <p className="verdict-kicker">Текущий результат</p>
               {staleCheck ? (
                 <p>
                   Код изменился после последней проверки. Результат ниже — для сохранённого снимка. Чтобы оценить
@@ -396,8 +445,14 @@ export function Practice({
                   </li>
                 ))}
               </ul>
-              <IssueList issues={grade.issues} />
-              {grade.passed && (
+              {!grade.passed && (
+                <IssueList
+                  issues={grade.issues}
+                  stdin={failedTest?.stdin}
+                  nextHint="Исправьте код по причине выше и снова нажмите «Проверить»."
+                />
+              )}
+              {grade.passed && !staleCheck && (
                 <p className="next-action">
                   <Link className="button" href={nextStep.href}>
                     {nextStep.label}
@@ -409,6 +464,32 @@ export function Practice({
           {!runResult && !grade && !discardedDuringCheck && (
             <p className="small muted">Нажмите «Проверить», чтобы оценить решение тестами.</p>
           )}
+
+          <section className="attempt-history" aria-labelledby="attempts-title">
+            <h3 id="attempts-title">Последние попытки</h3>
+            {attemptHistory.length === 0 ? (
+              <p className="small muted">Пока нет сохранённых попыток по этой задаче.</p>
+            ) : (
+              <ul className="attempt-history-list">
+                {attemptHistory.map((attempt) => (
+                  <li key={attempt.id}>
+                    <time dateTime={attempt.timestamp}>
+                      {new Date(attempt.timestamp).toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                    <span className={attempt.passed && isValidEvidence(attempt) ? 'is-ok' : 'is-error'}>
+                      {attempt.passed && isValidEvidence(attempt) ? 'Принято' : 'Ошибка'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="small muted">Код прошлых попыток не хранится в истории — только вердикт и время.</p>
+          </section>
         </section>
       </div>
     </div>

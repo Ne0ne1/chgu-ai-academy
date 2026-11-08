@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Action } from '@/components/ui';
 import { exercises } from '@/content/lessons';
 import { buildProgressSnapshot, skillLabel } from '@/lib/learning/progress';
 import { createEmptyLearningState, readLearningState, resetLearningState } from '@/lib/learning/storage';
 import type { ProgressSnapshot } from '@/lib/learning/contracts';
+import { getExerciseRouteKey } from '@/lib/learning/catalog';
 
 export function ProgressPanel() {
   const [snapshot, setSnapshot] = useState<ProgressSnapshot>(() =>
@@ -73,6 +75,35 @@ export function ProgressPanel() {
           )}
         </>
       )}
+
+      <section className="review-section" aria-labelledby="review-title">
+        <h2 id="review-title">Что повторить</h2>
+        {snapshot.reviewSkills.length === 0 ? (
+          <p className="muted">Пока нет тем с ошибками, требующими повторения.</p>
+        ) : (
+          <ul className="progress-list">
+            {snapshot.reviewSkills.map((item) => {
+              const exercise = Object.values(exercises).find((ex) =>
+                ex.expectedSkillIds.includes(item.skillId),
+              );
+              const route = exercise ? getExerciseRouteKey(exercise.id) : undefined;
+              return (
+                <li key={item.skillId}>
+                  {skillLabel(item.skillId)}
+                  {route && (
+                    <>
+                      {' · '}
+                      <Link className="text-link" href={`/practice/${route}`}>
+                        открыть задачу
+                      </Link>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <div className="progress-continue">
         {snapshot.nextStep ? (
