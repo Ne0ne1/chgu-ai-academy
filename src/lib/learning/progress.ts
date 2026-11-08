@@ -53,7 +53,7 @@ export function taskRowLabel(status: TaskRowStatus): string {
     case 'accepted':
       return 'Принято';
     case 'has_error':
-      return 'Есть ошибка';
+      return 'В работе';
     default:
       return 'Не начато';
   }

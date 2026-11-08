@@ -62,9 +62,11 @@ function TaskSlotRow({
 }) {
   if (!slot.practiceKey) {
     return (
-      <li className="task-slot is-soon">
-        <span className="task-slot-title">{slot.title}</span>
-        <span className="task-slot-status">Скоро</span>
+      <li>
+        <div className="task-slot is-soon" aria-disabled="true">
+          <span className="task-slot-title">{slot.title}</span>
+          <span className="task-slot-status">Скоро</span>
+        </div>
       </li>
     );
   }

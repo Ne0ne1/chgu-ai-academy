@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { CodeBlock, SelfCheck } from '@/components/interactions';
 import { LessonHelp } from '@/components/lesson-help';
 import { LessonObserver } from '@/components/learning/lesson-observer';
+import { LessonMaterials } from '@/components/learning/lesson-materials';
 import { LessonTaskPanel } from '@/components/learning/lesson-task-panel';
 import { moduleForLessonSlug } from '@/content/academy';
 import { variablesTaskSlots } from '@/content/lesson-tasks';
@@ -39,6 +40,63 @@ export default async function LessonPage({
   const hasPractice = lesson.exercises.length > 0;
   const taskSlots = lesson.id === 'variables' ? variablesTaskSlots : [];
   const reviewHref = lesson.sections[0] ? `#${lesson.sections[0].id}` : undefined;
+  const exampleSection = lesson.sections.find((section) => section.code);
+
+  const materialSections = [
+    {
+      id: 'outline',
+      title: 'Конспект',
+      body: (
+        <ul className="materials-toc">
+          {lesson.sections.map((section) => (
+            <li key={section.id}>
+              <a href={`#${section.id}`}>{section.title}</a>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'example',
+      title: 'Пример',
+      body: exampleSection ? (
+        <p className="small">
+          Короткий пример в разделе «
+          <a href={`#${exampleSection.id}`}>{exampleSection.title}</a>
+          » в основной колонке.
+        </p>
+      ) : (
+        <p className="small muted">Пример появится вместе с разбором темы.</p>
+      ),
+    },
+    {
+      id: 'extra',
+      title: 'Дополнительно',
+      body:
+        lesson.references.length > 0 ? (
+          <ul className="materials-toc">
+            {lesson.references.map((reference) => (
+              <li key={reference.url}>
+                <a href={reference.url} target="_blank" rel="noreferrer">
+                  {reference.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="small muted">Дополнительные ссылки будут добавлены позже.</p>
+        ),
+    },
+    {
+      id: 'video',
+      title: 'Видео',
+      body: (
+        <div className="video-placeholder" role="note">
+          Здесь будет видео по теме, созданное искусственным интеллектом
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="lesson-screen">
@@ -84,49 +142,7 @@ export default async function LessonPage({
           {hasPractice && <LessonHelp lessonId={lesson.id} />}
         </article>
 
-        <aside className="lesson-materials-col" aria-labelledby="materials-side-title">
-          <h2 id="materials-side-title">Материалы</h2>
-          <div className="material-block">
-            <h3>Конспект</h3>
-            <ul>
-              {lesson.sections.map((section) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`}>{section.title}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="material-block">
-            <h3>Пример</h3>
-            {lesson.sections.find((section) => section.code) ? (
-              <p className="small">Смотрите блок с кодом в основной колонке.</p>
-            ) : (
-              <p className="small muted">Пример появится вместе с разбором темы.</p>
-            )}
-          </div>
-          <div className="material-block">
-            <h3>Дополнительно</h3>
-            {lesson.references.length > 0 ? (
-              <ul>
-                {lesson.references.map((reference) => (
-                  <li key={reference.url}>
-                    <a href={reference.url} target="_blank" rel="noreferrer">
-                      {reference.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="small muted">Дополнительные ссылки будут добавлены позже.</p>
-            )}
-          </div>
-          <div className="material-block">
-            <h3>Видео</h3>
-            <div className="video-placeholder" role="note">
-              Здесь будет видео по теме, созданное искусственным интеллектом
-            </div>
-          </div>
-        </aside>
+        <LessonMaterials sections={materialSections} />
       </div>
     </div>
   );

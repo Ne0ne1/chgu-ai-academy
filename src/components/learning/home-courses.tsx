@@ -47,6 +47,7 @@ function CourseCard({
   href: string;
 }) {
   const { accepted, total } = useCourseAccepted(courseId);
+  const percent = total > 0 ? Math.round((accepted / total) * 100) : 0;
 
   return (
     <li>
@@ -59,6 +60,16 @@ function CourseCard({
         ) : (
           <p className="course-card-meta muted">Модули курса</p>
         )}
+        <div
+          className="course-card-progress"
+          role="progressbar"
+          aria-valuenow={accepted}
+          aria-valuemin={0}
+          aria-valuemax={Math.max(total, 1)}
+          aria-label={`Прогресс: ${accepted} из ${total || 0}`}
+        >
+          <span style={{ width: `${percent}%` }} />
+        </div>
       </Link>
     </li>
   );
