@@ -33,8 +33,8 @@ export function SkillsMap() {
       <section className="empty-state" aria-live="polite">
         <h2>Пока нет подтверждённых навыков</h2>
         <p>Сдайте задачу с тестами — навыки появятся здесь только после принятого решения.</p>
-        <Link className="text-link" href="/courses/python">
-          К курсу Python для AI
+        <Link className="text-link" href="/modules/python">
+          К модулю «Основы разработки»
         </Link>
       </section>
     );

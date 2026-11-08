@@ -1,11 +1,11 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { exercises, lessons } from '@/content/lessons';
-import { Action, Breadcrumbs } from '@/components/ui';
 import { CodeBlock, SelfCheck } from '@/components/interactions';
 import { LessonHelp } from '@/components/lesson-help';
 import { LessonObserver } from '@/components/learning/lesson-observer';
-import { BlockShell } from '@/components/learning/block-shell';
-import { blockForLessonSlug, getPythonCourse } from '@/content/academy';
+import { Action } from '@/components/ui';
+import { moduleForLessonSlug } from '@/content/academy';
+import { exercises, lessons } from '@/content/lessons';
 import { getExerciseRouteKey } from '@/lib/learning/catalog';
 
 export function generateStaticParams() {
@@ -23,8 +23,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const lesson = Object.hasOwn(lessons, key) ? lessons[key] : undefined;
   if (!lesson) notFound();
 
-  const block = blockForLessonSlug(key) ?? blockForLessonSlug(slug);
-  const course = getPythonCourse();
+  const module = moduleForLessonSlug(key);
   const firstExerciseId = lesson.exercises[0];
   const practiceKey = firstExerciseId ? getExerciseRouteKey(firstExerciseId) : undefined;
   const practiceHref = practiceKey ? `/practice/${practiceKey}` : `/practice/${lesson.id}`;
@@ -41,78 +40,53 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       ? `Сначала «${exerciseTitles[0]}», затем «${exerciseTitles[1]}».`
       : exerciseTitles.length === 1
         ? `Решите задачу «${exerciseTitles[0]}».`
-        : 'Перейдите к практике и решите задачу самостоятельно.';
-
-  const article = (
-    <article className="lesson-article">
-      <header className="lesson-heading">
-        <p className="small muted">
-          {block?.title ?? course.title} · {lesson.estimatedMinutes} минут
-        </p>
-        <h1>{lesson.title}</h1>
-        <p className="lesson-lead">{lesson.summary}</p>
-      </header>
-      <details className="lesson-objectives">
-        <summary>Что вы научитесь делать</summary>
-        <ul>
-          {lesson.objectives.map((objective) => (
-            <li key={objective}>{objective}</li>
-          ))}
-        </ul>
-        <p className="small muted">{lesson.prerequisites.join('. ')}.</p>
-      </details>
-      {lesson.sections.map((section) => (
-        <section className="lesson-section" id={section.id} key={section.id}>
-          <h2>{section.title}</h2>
-          {section.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-          {section.code && <CodeBlock code={section.code} output={section.output} />}
-          {section.note && <p className="lesson-note">{section.note}</p>}
-        </section>
-      ))}
-      <SelfCheck check={lesson.selfCheck} reviewHref={reviewHref} />
-      <LessonHelp lessonId={lesson.id} />
-      <section className="lesson-section practice-next" id="practice">
-        <h2>Практика</h2>
-        <p>{practiceIntro}</p>
-        <Action href={practiceHref}>Перейти к практике</Action>
-        <p className="small muted">Чтение урока само по себе освоение не подтверждает.</p>
-      </section>
-      <details className="references">
-        <summary>Источники и дополнительное чтение</summary>
-        {lesson.references.map((reference) => (
-          <div key={reference.url}>
-            <a href={reference.url} target="_blank" rel="noreferrer">
-              {reference.title} ↗
-            </a>
-            <p>{reference.attribution}</p>
-          </div>
-        ))}
-      </details>
-    </article>
-  );
+        : 'Перейдите к практике.';
 
   return (
     <>
-      <Breadcrumbs
-        items={[
-          { label: 'Моё обучение', href: '/' },
-          { label: course.title, href: '/courses/python' },
-          ...(block
-            ? [{ label: block.title, href: `/courses/python/${block.id}` }]
-            : []),
-          { label: lesson.title },
-        ]}
-      />
+      <p className="back-row">
+        <Link className="text-link" href={module ? `/modules/${module.id}` : '/'}>
+          Назад
+        </Link>
+      </p>
       <LessonObserver lessonId={lesson.id} sectionIds={lesson.sections.map((section) => section.id)} />
-      {block ? (
-        <BlockShell block={block} courseTitle={course.title} activeLessonSlug={slug}>
-          {article}
-        </BlockShell>
-      ) : (
-        <div className="lesson-layout">{article}</div>
-      )}
+      <article className="lesson-article lesson-alone">
+        <header className="lesson-heading">
+          <h1>{lesson.title}</h1>
+          <p className="lesson-lead">{lesson.summary}</p>
+        </header>
+
+        <div className="video-placeholder" role="note">
+          Здесь будет видео по теме, созданное искусственным интеллектом
+        </div>
+
+        <details className="lesson-objectives">
+          <summary>Что вы научитесь делать</summary>
+          <ul>
+            {lesson.objectives.map((objective) => (
+              <li key={objective}>{objective}</li>
+            ))}
+          </ul>
+        </details>
+
+        {lesson.sections.map((section) => (
+          <section className="lesson-section" id={section.id} key={section.id}>
+            <h2>{section.title}</h2>
+            {section.paragraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+            {section.code && <CodeBlock code={section.code} output={section.output} />}
+            {section.note && <p className="lesson-note">{section.note}</p>}
+          </section>
+        ))}
+        <SelfCheck check={lesson.selfCheck} reviewHref={reviewHref} />
+        <LessonHelp lessonId={lesson.id} />
+        <section className="lesson-section practice-next" id="practice">
+          <h2>Практика</h2>
+          <p>{practiceIntro}</p>
+          <Action href={practiceHref}>К заданиям</Action>
+        </section>
+      </article>
     </>
   );
 }

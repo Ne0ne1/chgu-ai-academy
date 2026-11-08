@@ -136,10 +136,9 @@ export function buildProgressSnapshot(state: LearningStateV1, storageMessage?: s
       href: `/practice/${firstIncomplete[0]}`,
     };
   } else if (accepted.length > 0) {
-    nextStep = { label: 'К курсу', href: '/courses/python' };
+    nextStep = { label: 'К модулю', href: '/modules/python' };
   } else {
-    const lesson = lessons['python/variables'];
-    nextStep = { label: 'Открыть курс', href: '/courses/python' };
+    nextStep = { label: 'К модулю', href: '/modules/python' };
   }
 
   if (state.lastLocation) {
@@ -182,7 +181,7 @@ export function nextStepAfterPass(exerciseKey: string): { label: string; href: s
   if (nextKey) {
     return { label: `Следующая задача: ${exercises[nextKey].title}`, href: `/practice/${nextKey}` };
   }
-  return { label: 'К курсу', href: '/courses/python' };
+  return { label: 'К модулю', href: '/modules/python' };
 }
 
 export function skillLabel(skillId: string): string {

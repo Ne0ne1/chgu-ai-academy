@@ -10,6 +10,7 @@ import { lessonHref, type GradeIssue } from '@/lib/grading/feedback';
 import { usePythonRuntime } from '@/hooks/use-python-runtime';
 import { useLearningStore } from '@/hooks/use-learning-store';
 import { nextStepAfterPass, recentAttemptsForExercise } from '@/lib/learning/progress';
+import { programExamples } from '@/lib/learning/task-examples';
 import type { RuntimeRunResult } from '@/lib/runtime/contracts';
 import { askMentor } from '@/components/mentor/ask-mentor';
 import { MentorAnswerText, MentorModeLabel } from '@/components/mentor/mentor-answer';
@@ -239,17 +240,37 @@ export function Practice({
     lessonSlug,
     primaryIssue?.lessonAnchor || mentorAnchor || '#lesson-help',
   );
+  const examples = useMemo(() => programExamples(exercise, 2), [exercise]);
 
   return (
     <div className="practice-layout">
       <section className="practice-statement" aria-labelledby="task-title">
-        <h2 id="task-title">Задание</h2>
+        <h2 id="task-title">Условие</h2>
         <p>{exercise.statement}</p>
-        <h3>Ожидаемый вывод</h3>
-        <pre className="expected-output">
-          {exercise.visibleTests[0]?.expectedStdout ?? 'Указан в условии задания'}
-        </pre>
-        <p className="small muted">Пример для первого набора входов. Проверка использует несколько наборов.</p>
+
+        <section className="program-example" aria-labelledby="example-title">
+          <h3 id="example-title">Пример работы программы</h3>
+          {examples.map((example, index) => (
+            <div className="program-example-item" key={`${example.expectedStdout}-${index}`}>
+              {examples.length > 1 && <p className="small muted">Пример {index + 1}</p>}
+              <dl className="verdict-grid">
+                <div>
+                  <dt>Входные данные</dt>
+                  <dd>
+                    <pre>{example.stdin.trim() || '(пусто)'}</pre>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Ожидаемый вывод</dt>
+                  <dd>
+                    <pre>{example.expectedStdout}</pre>
+                  </dd>
+                </div>
+              </dl>
+              <p className="program-example-why">{example.explanation}</p>
+            </div>
+          ))}
+        </section>
 
         <details className="practice-help">
           <summary>Подсказка</summary>

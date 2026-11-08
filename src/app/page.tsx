@@ -5,7 +5,6 @@ export default function Home() {
     <div className="cabinet-home">
       <header className="cabinet-home-header">
         <h1>Моё обучение</h1>
-        <p className="cabinet-home-lead">Два курса. Сейчас открыт только первый блок Python.</p>
       </header>
       <HomeCourses />
     </div>

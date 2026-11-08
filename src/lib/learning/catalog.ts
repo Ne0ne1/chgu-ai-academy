@@ -1,3 +1,4 @@
+import { allGradedExerciseKeys } from '@/content/academy';
 import { exercises, lessons } from '@/content/lessons';
 import type { LearningLocation } from '@/lib/learning/contracts';
 
@@ -10,7 +11,8 @@ export function getExerciseRouteKey(exerciseId: string): string | undefined {
 }
 
 export function listAvailableExerciseKeys(): string[] {
-  return Object.keys(exercises);
+  const fromCurriculum = allGradedExerciseKeys();
+  return fromCurriculum.length > 0 ? fromCurriculum : Object.keys(exercises);
 }
 
 export function getLessonExerciseKeys(lessonId: string): string[] {

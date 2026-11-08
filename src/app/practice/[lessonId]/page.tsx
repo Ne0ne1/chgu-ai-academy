@@ -1,9 +1,8 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { exercises, lessons } from '@/content/lessons';
-import { Breadcrumbs } from '@/components/ui';
 import { Practice } from '@/components/practice';
-import { BlockShell } from '@/components/learning/block-shell';
-import { blockForExerciseKey, getPythonCourse } from '@/content/academy';
+import { moduleForExerciseKey } from '@/content/academy';
+import { exercises, lessons } from '@/content/lessons';
 
 export const metadata = { title: 'Практика' };
 export function generateStaticParams() {
@@ -16,41 +15,20 @@ export default async function Page({ params }: { params: Promise<{ lessonId: str
   if (!exercise) notFound();
   const lesson = Object.values(lessons).find((item) => item.id === exercise.lessonId);
   if (!lesson) notFound();
-  const block = blockForExerciseKey(lessonId);
-  const course = getPythonCourse();
+  const module = moduleForExerciseKey(lessonId);
+  const backHref = module ? `/modules/${module.id}` : '/';
 
-  const body = (
-    <>
+  return (
+    <div className="practice-page">
+      <p className="back-row">
+        <Link className="text-link" href={backHref}>
+          Назад
+        </Link>
+      </p>
       <header className="page-title practice-heading">
-        <p className="small muted">Задача · {block?.title ?? course.title}</p>
         <h1>{exercise.title}</h1>
       </header>
       <Practice key={exercise.id} exercise={exercise} lessonSlug={lesson.slug} exerciseKey={lessonId} />
-    </>
-  );
-
-  return (
-    <>
-      <Breadcrumbs
-        items={[
-          { label: 'Моё обучение', href: '/' },
-          { label: course.title, href: '/courses/python' },
-          ...(block ? [{ label: block.title, href: `/courses/python/${block.id}` }] : []),
-          { label: lesson.title, href: `/learn/${lesson.slug}` },
-          { label: exercise.title },
-        ]}
-      />
-      {block ? (
-        <BlockShell
-          block={block}
-          courseTitle={course.title}
-          activeExerciseKey={lessonId}
-        >
-          {body}
-        </BlockShell>
-      ) : (
-        body
-      )}
-    </>
+    </div>
   );
 }

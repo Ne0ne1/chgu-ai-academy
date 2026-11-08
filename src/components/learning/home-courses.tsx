@@ -2,56 +2,64 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { academyCourses } from '@/content/academy';
-import { continueHref, courseExerciseProgress, hasStartedLearning } from '@/lib/learning/progress';
+import { academyCourses, courseExerciseKeys, type CourseId } from '@/content/academy';
+import { exercises } from '@/content/lessons';
+import { acceptedExerciseIds } from '@/lib/learning/progress';
 import { readLearningState } from '@/lib/learning/storage';
 
-export function HomeCourses() {
+function useCourseAccepted(courseId: CourseId) {
   const [accepted, setAccepted] = useState(0);
-  const [total, setTotal] = useState(2);
-  const [href, setHref] = useState('/courses/python');
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
+    const keys = courseExerciseKeys(courseId);
     const { state } = readLearningState();
-    const progress = courseExerciseProgress(state);
-    setAccepted(progress.accepted);
-    setTotal(progress.total);
-    setHref(hasStartedLearning(state) ? continueHref(state) : '/courses/python');
-  }, []);
+    const acceptedSet = new Set(acceptedExerciseIds(state.attempts));
+    let count = 0;
+    for (const key of keys) {
+      const exercise = exercises[key];
+      if (exercise && acceptedSet.has(exercise.id)) count += 1;
+    }
+    setAccepted(count);
+    setTotal(keys.length);
+  }, [courseId]);
 
+  return { accepted, total };
+}
+
+export function HomeCourses() {
   return (
     <ul className="home-course-list">
-      {academyCourses.map((course) => {
-        if (course.readiness === 'coming') {
-          return (
-            <li key={course.id} className="home-course-card is-coming" aria-disabled="true">
-              <p className="course-card-badge">Готовится</p>
-              <h2 className="course-card-title">{course.title}</h2>
-              <p className="course-card-desc">{course.goal}</p>
-            </li>
-          );
-        }
-
-        const percent = total > 0 ? Math.round((accepted / total) * 100) : 0;
-        return (
-          <li key={course.id}>
-            <Link
-              className="home-course-card course-card-link"
-              href={href}
-              aria-label={`${course.title}, ${accepted} из ${total} задач принято`}
-            >
-              <p className="course-card-badge">
-                {accepted}/{total} задач принято
-              </p>
-              <h2 className="course-card-title">{course.title}</h2>
-              <p className="course-card-desc">{course.goal}</p>
-              <div className="course-card-progress" aria-hidden="true">
-                <span style={{ width: `${percent}%` }} />
-              </div>
-            </Link>
-          </li>
-        );
-      })}
+      {academyCourses.map((course) => (
+        <CourseCard key={course.id} courseId={course.id} title={course.title} href={course.href} />
+      ))}
     </ul>
+  );
+}
+
+function CourseCard({
+  courseId,
+  title,
+  href,
+}: {
+  courseId: CourseId;
+  title: string;
+  href: string;
+}) {
+  const { accepted, total } = useCourseAccepted(courseId);
+
+  return (
+    <li>
+      <Link className="home-course-card course-card-link" href={href} aria-label={title}>
+        <h2 className="course-card-title">{title}</h2>
+        {total > 0 ? (
+          <p className="course-card-meta">
+            {accepted}/{total} заданий
+          </p>
+        ) : (
+          <p className="course-card-meta muted">Модули курса</p>
+        )}
+      </Link>
+    </li>
   );
 }

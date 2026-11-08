@@ -118,18 +118,18 @@ async function main() {
     await page.evaluate(() => localStorage.removeItem('chgu-ai-academy:learning:v1'));
     await page.reload();
     await page.getByRole('heading', { name: 'Моё обучение' }).waitFor();
-    await page.getByRole('link', { name: /Python для AI/ }).click();
-    await page.waitForURL(/\/courses\/python/);
-    await page.getByRole('link', { name: /Первые программы/ }).click();
-    await page.waitForURL(/\/courses\/python\/first-programs/);
-    await page.getByRole('link', { name: /Открыть урок/ }).click();
+    await page.getByRole('link', { name: /Программирование и данные/ }).click();
+    await page.waitForURL(/\/courses\/programming/);
+    await page.getByRole('link', { name: /Основы разработки/ }).click();
+    await page.waitForURL(/\/modules\/python/);
+    await page.getByRole('link', { name: /Переменные и типы данных/ }).first().click();
     await page.waitForURL(/\/learn\/python\/variables/);
 
     await page.locator('details.lesson-help > summary').click();
     await page.getByRole('button', { name: 'Получить объяснение' }).click();
     await page.getByText(/Режим: подготовленные подсказки|Режим: локальная модель/).waitFor({ timeout: 30_000 });
 
-    await page.getByRole('link', { name: 'Перейти к практике' }).click();
+    await page.getByRole('link', { name: 'К заданиям' }).click();
     await page.waitForURL(/\/practice\/variables/);
     await waitForRuntime(page);
 
@@ -183,8 +183,8 @@ async function main() {
     ].join('\n'));
     await page.getByRole('button', { name: 'Проверить' }).click();
     await page.getByText(/Решение принято/).waitFor({ timeout: 60_000 });
-    await page.getByRole('link', { name: /К курсу/ }).click();
-    await page.waitForURL(/\/courses\/python/);
+    await page.getByRole('link', { name: /К модулю/ }).click();
+    await page.waitForURL(/\/modules\/python/);
 
     await page.goto(`${base}/progress`);
     await page.getByRole('heading', { name: 'Подтверждённый результат', exact: true }).waitFor();
@@ -212,8 +212,8 @@ async function main() {
     }
 
     await page.goto(`${base}/`);
-    await page.getByRole('link', { name: /Python для AI/ }).waitFor();
-    await page.getByText(/\d+\/\d+ задач принято/).waitFor();
+    await page.getByRole('link', { name: /Программирование и данные/ }).waitFor();
+    await page.getByText(/\d+\/\d+ заданий/).waitFor();
 
     // Infinite loop / timeout
     await page.goto(`${base}/practice/variables`);

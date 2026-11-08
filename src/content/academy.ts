@@ -1,101 +1,59 @@
-import { exercises, lessons, variablesLesson } from '@/content/lessons';
+import { modules } from '@/content/curriculum';
+import { exercises, lessons } from '@/content/lessons';
+import type { Module } from '@/lib/contracts';
 
-export type BlockReadiness = 'available' | 'coming';
-export type CourseReadiness = 'available' | 'coming';
-
-export interface AcademyBlock {
-  id: string;
-  title: string;
-  outcome: string;
-  readiness: BlockReadiness;
-  lessonSlugs: string[];
-  /** Practice route keys that count toward progress for this block. */
-  exerciseKeys: string[];
-}
+export type CourseId = 'programming' | 'ai-engineering';
 
 export interface AcademyCourse {
-  id: string;
+  id: CourseId;
   title: string;
-  goal: string;
-  readiness: CourseReadiness;
-  href?: string;
-  blocks?: AcademyBlock[];
+  /** Short optional subtitle for home card — keep minimal. */
+  blurb?: string;
+  moduleIds: string[];
+  href: string;
 }
 
-/** Available graded tasks for the live Python course (first block only today). */
-export const PYTHON_COURSE_ID = 'python-ai';
-export const FIRST_BLOCK_ID = 'first-programs';
-
-export const pythonBlocks: AcademyBlock[] = [
-  {
-    id: FIRST_BLOCK_ID,
-    title: 'Первые программы',
-    outcome: 'Сохранять значения в переменных, различать типы и преобразовывать текст в число.',
-    readiness: 'available',
-    lessonSlugs: [variablesLesson.slug],
-    exerciseKeys: ['variables', 'variables-transfer'],
-  },
-  {
-    id: 'conditions',
-    title: 'Условия и логика',
-    outcome: 'Выбирать действие по условию и соединять проверки.',
-    readiness: 'coming',
-    lessonSlugs: [],
-    exerciseKeys: [],
-  },
-  {
-    id: 'loops-data',
-    title: 'Циклы и данные',
-    outcome: 'Повторять шаги и работать с простыми коллекциями.',
-    readiness: 'coming',
-    lessonSlugs: [],
-    exerciseKeys: [],
-  },
-  {
-    id: 'functions-projects',
-    title: 'Функции и небольшие проекты',
-    outcome: 'Выделять повторяющуюся логику и собрать маленький проект.',
-    readiness: 'coming',
-    lessonSlugs: [],
-    exerciseKeys: [],
-  },
-];
-
+/** Two courses preserving all seven curriculum modules in pedagogical order. */
 export const academyCourses: AcademyCourse[] = [
   {
-    id: PYTHON_COURSE_ID,
-    title: 'Python для AI',
-    goal: 'Освоить базовый Python так, чтобы уверенно читать и писать учебные программы для следующих курсов по данным и моделям.',
-    readiness: 'available',
-    href: '/courses/python',
-    blocks: pythonBlocks,
+    id: 'programming',
+    title: 'Программирование и данные',
+    moduleIds: ['python', 'math', 'ml'],
+    href: '/courses/programming',
   },
   {
-    id: 'ai-foundations',
-    title: 'Основы AI',
-    goal: 'Понять, как устроены модели, данные и проверка качества — без обещания, что курс уже открыт.',
-    readiness: 'coming',
+    id: 'ai-engineering',
+    title: 'AI Engineering',
+    moduleIds: ['dl', 'llm', 'production', 'capstone'],
+    href: '/courses/ai-engineering',
   },
 ];
 
-export function getPythonCourse(): AcademyCourse {
-  return academyCourses[0];
+export function getCourse(courseId: string): AcademyCourse | undefined {
+  return academyCourses.find((course) => course.id === courseId);
 }
 
-export function getBlock(blockId: string): AcademyBlock | undefined {
-  return pythonBlocks.find((block) => block.id === blockId);
+export function getModule(moduleId: string): Module | undefined {
+  return modules.find((module) => module.id === moduleId);
 }
 
-export function blockForLessonSlug(slug: string): AcademyBlock | undefined {
-  return pythonBlocks.find((block) => block.lessonSlugs.includes(slug) || block.lessonSlugs.includes(`python/${slug}`));
+export function courseForModule(moduleId: string): AcademyCourse | undefined {
+  return academyCourses.find((course) => course.moduleIds.includes(moduleId));
 }
 
-export function blockForExerciseKey(exerciseKey: string): AcademyBlock | undefined {
-  return pythonBlocks.find((block) => block.exerciseKeys.includes(exerciseKey));
+/** Published lesson slugs attached to a curriculum module topic. */
+export function publishedLessonSlugs(moduleId: string): string[] {
+  const module = getModule(moduleId);
+  if (!module) return [];
+  return module.topics
+    .filter((topic) => topic.status === 'available' && topic.lessonSlug)
+    .map((topic) => topic.lessonSlug as string);
 }
 
-export function availablePythonExerciseKeys(): string[] {
-  return pythonBlocks.flatMap((block) => (block.readiness === 'available' ? block.exerciseKeys : []));
+export function plannedTopicTitles(moduleId: string): string[] {
+  const module = getModule(moduleId);
+  if (!module) return [];
+  return module.topics.filter((topic) => topic.status === 'planned').map((topic) => topic.title);
 }
 
 export function lessonBySlug(slugOrPath: string) {
@@ -103,6 +61,41 @@ export function lessonBySlug(slugOrPath: string) {
   return Object.hasOwn(lessons, key) ? lessons[key] : undefined;
 }
 
-export function exerciseTitle(exerciseKey: string): string {
-  return exercises[exerciseKey]?.title ?? exerciseKey;
+/** Practice route keys for published lessons in this module. */
+export function moduleExerciseKeys(moduleId: string): string[] {
+  const keys: string[] = [];
+  for (const slug of publishedLessonSlugs(moduleId)) {
+    const lesson = lessonBySlug(slug);
+    if (!lesson) continue;
+    for (const exerciseId of lesson.exercises) {
+      const route = Object.entries(exercises).find(([, exercise]) => exercise.id === exerciseId)?.[0];
+      if (route) keys.push(route);
+    }
+  }
+  return keys;
+}
+
+export function moduleForLessonSlug(slug: string): Module | undefined {
+  const full = slug.includes('/') ? slug : `python/${slug}`;
+  return modules.find((module) =>
+    module.topics.some((topic) => topic.lessonSlug === full || topic.lessonSlug === slug),
+  );
+}
+
+export function moduleForExerciseKey(exerciseKey: string): Module | undefined {
+  const exercise = exercises[exerciseKey];
+  if (!exercise) return undefined;
+  const lesson = Object.values(lessons).find((item) => item.id === exercise.lessonId);
+  if (!lesson) return undefined;
+  return moduleForLessonSlug(lesson.slug);
+}
+
+export function allGradedExerciseKeys(): string[] {
+  return modules.flatMap((module) => moduleExerciseKeys(module.id));
+}
+
+export function courseExerciseKeys(courseId: CourseId): string[] {
+  const course = getCourse(courseId);
+  if (!course) return [];
+  return course.moduleIds.flatMap((moduleId) => moduleExerciseKeys(moduleId));
 }
