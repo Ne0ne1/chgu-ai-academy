@@ -35,30 +35,69 @@ export function ProgressPanel() {
   );
 
   if (snapshot.acceptedExerciseIds.length === 0 && snapshot.masteredSkills.length === 0) {
-    return <section className="progress-empty">
-      <h2>Пока нет проверенных решений</h2>
-      <p>Изучите урок и сдайте задачи с автоматической проверкой. Чтение и самопроверка освоение не подтверждают.</p>
-      {snapshot.nextStep && <Action href={snapshot.nextStep.href}>{snapshot.nextStep.label}</Action>}
-      {note && <p className="small muted">{note}</p>}
-      <p className="small muted"><button className="text-link" onClick={handleReset}>Сбросить учебные данные</button></p>
-    </section>;
+    return (
+      <section className="progress-board" aria-labelledby="progress-empty-title">
+        <div className="progress-panel progress-panel-empty">
+          <h2 id="progress-empty-title">Пока нет проверенных решений</h2>
+          <p>Изучите урок и сдайте задачи с автоматической проверкой. Чтение и самопроверка освоение не подтверждают.</p>
+          {snapshot.nextStep && <Action href={snapshot.nextStep.href}>{snapshot.nextStep.label}</Action>}
+          {note && <p className="small muted">{note}</p>}
+          <p className="small muted">
+            <button className="text-link" type="button" onClick={handleReset}>
+              Сбросить учебные данные
+            </button>
+          </p>
+        </div>
+      </section>
+    );
   }
 
-  return <section className="progress-empty">
-    <h2>Принятые задачи</h2>
-    <ul>{acceptedTitles.map((title) => <li key={title}>{title}</li>)}</ul>
-    <h2>Подтверждённые навыки</h2>
-    {snapshot.masteredSkills.length === 0 ? (
-      <p>Пока нет навыков с доказательством успешной попытки.</p>
-    ) : (
-      <ul>{snapshot.masteredSkills.map((item) => <li key={item.skillId}>{skillLabel(item.skillId)}</li>)}</ul>
-    )}
-    {snapshot.reviewSkills.length > 0 && <>
-      <h2>Нужно повторить</h2>
-      <ul>{snapshot.reviewSkills.map((item) => <li key={item.skillId}>{skillLabel(item.skillId)}</li>)}</ul>
-    </>}
-    {snapshot.nextStep && <p><Action href={snapshot.nextStep.href}>{snapshot.nextStep.label}</Action></p>}
-    {note && <p className="small muted">{note}</p>}
-    <p className="small muted"><button className="text-link" onClick={handleReset}>Сбросить учебные данные</button></p>
-  </section>;
+  return (
+    <section className="progress-board" aria-label="Учебный прогресс">
+      <div className="progress-panel">
+        <h2>Принятые задачи</h2>
+        <ul className="progress-list">
+          {acceptedTitles.map((title) => (
+            <li key={title}>{title}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="progress-panel">
+        <h2>Подтверждённые навыки</h2>
+        {snapshot.masteredSkills.length === 0 ? (
+          <p>Пока нет навыков с доказательством успешной попытки.</p>
+        ) : (
+          <ul className="progress-list">
+            {snapshot.masteredSkills.map((item) => (
+              <li key={item.skillId}>{skillLabel(item.skillId)}</li>
+            ))}
+          </ul>
+        )}
+        {snapshot.reviewSkills.length > 0 && (
+          <>
+            <h3>Нужно повторить</h3>
+            <ul className="progress-list">
+              {snapshot.reviewSkills.map((item) => (
+                <li key={item.skillId}>{skillLabel(item.skillId)}</li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+      <div className="progress-panel progress-next">
+        <h2>Следующий шаг</h2>
+        {snapshot.nextStep ? (
+          <Action href={snapshot.nextStep.href}>{snapshot.nextStep.label}</Action>
+        ) : (
+          <p>Все доступные задачи приняты.</p>
+        )}
+        {note && <p className="small muted">{note}</p>}
+        <p className="small muted">
+          <button className="text-link" type="button" onClick={handleReset}>
+            Сбросить учебные данные
+          </button>
+        </p>
+      </div>
+    </section>
+  );
 }

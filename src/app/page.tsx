@@ -3,40 +3,82 @@ import { HomeProgressSummary, HomeStartAction } from '@/components/learning/home
 import { variablesLesson } from '@/content/lessons';
 
 export default function Home() {
-  return <div className="home-page">
-    <header className="home-heading">
-      <h1>CHGU AI Academy</h1>
-      <p>
-        Проблема: студенту сложно учиться Python без быстрой объективной проверки и понятной помощи после ошибки.
-        Этот прототип даёт один рабочий цикл прямо в браузере — без регистрации.
-      </p>
-    </header>
-    <section className="learning-start" aria-labelledby="current-lesson">
-      <p className="eyebrow">Модуль 1 · Основы Python · доступно сейчас</p>
-      <h2 id="current-lesson">{variablesLesson.title}</h2>
-      <p>
-        Прочитайте короткий урок, намеренно сдайте неверное решение, разберите ошибку, исправьте код и посмотрите,
-        как сохраняется прогресс. Оценка ставится только реальными тестами Python в браузере.
-      </p>
-      <ol className="learning-steps" aria-label="Демонстрационный путь">
-        <li>Урок</li>
-        <li>Неверная попытка</li>
-        <li>Подсказка</li>
-        <li>Исправление</li>
-        <li>Прогресс</li>
-      </ol>
-      <HomeStartAction/>
-      <p className="small muted" style={{ marginTop: 16 }}>
-        Сразу к практике:{' '}
-        <Link className="text-link" href="/practice/variables">задача «План на учебную неделю»</Link>
-        {' · '}
-        <Link className="text-link" href="/progress">прогресс</Link>
-      </p>
-    </section>
-    <div className="home-progress"><h2>Ваш прогресс</h2><HomeProgressSummary/></div>
-    <p className="small muted">
-      Сейчас доступен один полноценный урок и две проверяемые задачи. Это рабочий прототип учебного цикла, а не готовая
-      12‑месячная программа. В публичной среде помощь идёт в режиме подготовленных подсказок.
-    </p>
-  </div>;
+  return (
+    <div className="home-page">
+      <section className="home-hero" aria-labelledby="home-brand">
+        <div className="home-hero-copy">
+          <p className="home-kicker">CHGU AI Academy</p>
+          <h1 id="home-brand">Учите Python с проверкой в браузере</h1>
+          <p className="home-lead">
+            Прочитайте урок, сдайте задачу, увидьте ошибку тестов, получите подсказку и исправьте код — без
+            установки Python и без регистрации.
+          </p>
+          <div className="home-cta-row">
+            <HomeStartAction />
+          </div>
+          <p className="home-scope">
+            Сейчас открыто: 1 урок · 2 задачи ·{' '}
+            <Link className="text-link" href="/about">
+              подробнее о границах прототипа
+            </Link>
+          </p>
+        </div>
+
+        <aside className="home-cycle" aria-label="Пример учебного цикла">
+          <p className="home-cycle-title">Как работает цикл</p>
+          <ol className="cycle-steps">
+            <li className="cycle-step">
+              <span className="cycle-label">Код</span>
+              <pre className="cycle-code" tabIndex={0}>
+                {`total_hours = 15
+print("За неделю: 15 ч")`}
+              </pre>
+            </li>
+            <li className="cycle-step is-error">
+              <span className="cycle-label">Ошибка проверки</span>
+              <p>Пока не принято: значение должно зависеть от входа, а не от константы.</p>
+            </li>
+            <li className="cycle-step is-hint">
+              <span className="cycle-label">Подсказка</span>
+              <p>Пересчитайте произведение days × hours_per_day для каждого набора входных данных.</p>
+            </li>
+            <li className="cycle-step is-ok">
+              <span className="cycle-label">Исправление</span>
+              <pre className="cycle-code" tabIndex={0}>
+                {`total_hours = days * hours_per_day
+print(f"За неделю: {total_hours} ч")`}
+              </pre>
+            </li>
+          </ol>
+        </aside>
+      </section>
+
+      <section className="home-lesson-strip" aria-labelledby="current-lesson">
+        <div>
+          <p className="eyebrow">Доступный урок</p>
+          <h2 id="current-lesson">{variablesLesson.title}</h2>
+          <p>
+            Короткое объяснение, самопроверка и две задачи с запуском Python через Pyodide. Оценка ставится только
+            тестами — чтение и подсказка освоение не подтверждают.
+          </p>
+        </div>
+        <div className="home-lesson-links">
+          <Link className="text-link" href={`/learn/${variablesLesson.slug}`}>
+            Открыть урок
+          </Link>
+          <Link className="text-link" href="/practice/variables">
+            Сразу к задаче
+          </Link>
+          <Link className="text-link" href="/progress">
+            Прогресс
+          </Link>
+        </div>
+      </section>
+
+      <section className="home-progress" aria-labelledby="home-progress-title">
+        <h2 id="home-progress-title">Ваш прогресс</h2>
+        <HomeProgressSummary />
+      </section>
+    </div>
+  );
 }

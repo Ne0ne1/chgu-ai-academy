@@ -8,7 +8,7 @@ import { readLearningState } from '@/lib/learning/storage';
 
 export function HomeStartAction() {
   const [href, setHref] = useState(`/learn/${variablesLesson.slug}`);
-  const [label, setLabel] = useState('Начать обучение');
+  const [label, setLabel] = useState('Попробовать урок');
 
   useEffect(() => {
     const { state } = readLearningState();

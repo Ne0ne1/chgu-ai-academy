@@ -186,17 +186,12 @@ export function Practice({
       <h3>Ожидаемый вывод</h3><pre className="expected-output">{exercise.visibleTests[0]?.expectedStdout ?? 'Указан в условии задания'}</pre>
       <p className="small muted">Пример для первого набора входных данных. Проверка использует несколько наборов.</p>
       <details className="practice-help"><summary>Подсказка</summary><div className="help-content">
-        <p className="small muted">До первой проверки доступны общие подготовленные подсказки. Помощь не меняет Attempt и Mastery.</p>
-        {exercise.hints.length > 0 ? <><p>{exercise.hints[0]}</p>
-          {exercise.hints.slice(1, hint + 1).map(text => <p key={text}>{text}</p>)}
-          {hint < exercise.hints.length - 1 && <button className="text-link" onClick={() => setHint(hint + 1)}>Следующая подсказка</button>}</> : <p>Вернитесь к примеру в уроке и сравните порядок действий.</p>}
-        {hasFailedAttempt && <>
-          <p className="small muted">После ошибки можно запросить помощь по последнему результату проверки. Готовое решение не выдаётся.</p>
-          <label className="small">
-            <input type="checkbox" checked={includeCode} onChange={event => setIncludeCode(event.target.checked)}/>
-            {' '}Передать снимок проверенного кода настроенному серверу модели
-          </label>
-          <p className="small muted">Код уходит только после вашего согласия и только на сервер, где запущен Next.js с настройками Ollama. Это не модель на устройстве каждого студента публичного сайта.</p>
+        <p className="help-portion-note">Подсказки открываются порциями и не меняют Attempt / Mastery.</p>
+        {exercise.hints.length > 0 ? <><p className="help-portion">{exercise.hints[0]}</p>
+          {exercise.hints.slice(1, hint + 1).map(text => <p className="help-portion" key={text}>{text}</p>)}
+          {hint < exercise.hints.length - 1 && <button className="text-link" type="button" onClick={() => setHint(hint + 1)}>Показать следующую подсказку</button>}</> : <p>Вернитесь к примеру в уроке и сравните порядок действий.</p>}
+        {hasFailedAttempt && <div className="help-after-error">
+          <p className="help-portion-note">После ошибки можно запросить адресную помощь. Готовое решение не выдаётся.</p>
           <p>
             <button className="button secondary" type="button" disabled={mentorLoading} onClick={() => void requestMentorHelp()}>
               {mentorLoading ? 'Готовим помощь…' : 'Помощь по ошибке'}
@@ -204,14 +199,24 @@ export function Practice({
           </p>
           {mentorMode && <MentorModeLabel mode={mentorMode} modelName={mentorModel}/>}
           {mentorNotice && <p className="small muted">{mentorNotice}</p>}
-          {mentorError && <p className="small muted">{mentorError}</p>}
+          {mentorError && <p className="result-banner is-error" role="alert">{mentorError}</p>}
           {mentorText && <>
-            <MentorAnswerText text={mentorText}/>
+            <div className="mentor-teaching">
+              <MentorAnswerText text={mentorText}/>
+            </div>
             <Link className="text-link help-back" href={`/learn/${lessonSlug}${mentorAnchor.startsWith('#') ? mentorAnchor : '#lesson-help'}`}>
               Открыть раздел урока
             </Link>
           </>}
-        </>}
+          <details className="help-tech">
+            <summary>Технические детали передачи кода</summary>
+            <label className="small">
+              <input type="checkbox" checked={includeCode} onChange={event => setIncludeCode(event.target.checked)}/>
+              {' '}Передать снимок проверенного кода настроенному серверу модели
+            </label>
+            <p className="small muted">Код уходит только после согласия и только если сервер приложения настроен на локальную модель. На публичном сайте по умолчанию используются подготовленные подсказки.</p>
+          </details>
+        </div>}
         <Link className="text-link help-back" href={`/learn/${lessonSlug}#lesson-help`}>Разобрать понятие в уроке</Link>
       </div></details>
     </section>
@@ -230,37 +235,43 @@ export function Practice({
       </div>
       <p className="editor-note small muted">Черновик сохраняется локально в браузере. Подсказки и простой запуск не засчитывают решение.</p>
     </section>
-    <section className="output-panel" aria-labelledby="result-title"><h2 id="result-title">Результат проверки</h2>
-      <p id="runtime-status">{statusText(status, detail, storageMessage)}</p>
-      {runResult && <div className="run-output" role="status">
+    <section className="output-panel" aria-labelledby="result-title"><h2 id="result-title">Результат</h2>
+      <p id="runtime-status" className={`runtime-status is-${status}`}>{statusText(status, detail, storageMessage)}</p>
+      {runResult && <div className={`run-output ${runResult.ok ? 'is-ok' : 'is-error'}`} role="status">
         <p><strong>{runResult.ok ? 'Вывод программы' : 'Ошибка выполнения'}</strong>{runResult.truncated ? ' · вывод обрезан (лимит 20 КБ)' : ''}</p>
         <pre>{(runResult.stdout || runResult.stderr || runResult.errorMessage || '(пусто)').trimEnd() || '(пусто)'}</pre>
         <p className="small muted">Запуск без проверки не создаёт успешную попытку.</p>
       </div>}
-      {discardedDuringCheck && <div className="grade-output" role="status">
+      {discardedDuringCheck && <div className="grade-output is-warn" role="status">
         <p><strong>Проверка не сохранена.</strong> Код изменился, пока шла проверка предыдущего снимка. Attempt и освоение не обновлены.</p>
-        <p className="small muted">Нажмите «Проверить» ещё раз для текущего кода.</p>
+        <p className="next-action"><button className="button" type="button" disabled={buttonsDisabled} onClick={() => void handleCheck()}>Оценить текущий код</button></p>
       </div>}
-      {grade && <div className="grade-output" role="status">
+      {grade && <div className={`grade-output ${grade.passed && !staleCheck ? 'is-ok' : 'is-error'}`} role="status">
         {staleCheck ? (
-          <p>Код изменился после последней проверки. Результат ниже относится к уже сохранённому снимку; чтобы оценить новый код, нажмите «Проверить» снова.</p>
+          <p>Код изменился после последней проверки. Результат ниже относится к уже сохранённому снимку.</p>
         ) : grade.passed ? (
-          <p><strong>Решение принято.</strong> Навыки подтверждены только теми проверками, которые реально прошли.</p>
+          <p><strong>Решение принято.</strong> Навыки подтверждены только тестами, которые реально прошли.</p>
         ) : (
-          <p><strong>Пока не принято.</strong> Разберите причину и исправьте код. При необходимости откройте «Подсказка» → «Помощь по ошибке».</p>
+          <p><strong>Пока не принято.</strong> Исправьте код по причине ниже — или откройте одну порцию подсказки.</p>
         )}
-        <ul>
+        <ul className="test-result-list">
           {grade.testResults.map((item) => (
-            <li key={item.testId}>{item.passed ? 'Пройден' : 'Не пройден'}: {item.testId}</li>
+            <li key={item.testId} className={item.passed ? 'is-ok' : 'is-error'}>{item.passed ? 'Пройден' : 'Не пройден'}: {item.testId}</li>
           ))}
         </ul>
         <IssueList issues={grade.issues} lessonSlug={lessonSlug}/>
-        {!staleCheck && grade.passed && (
-          <p><Link className="text-link" href={nextStep.href}>{nextStep.label}</Link></p>
+        {grade.passed && (
+          <p className="next-action"><Link className="button" href={nextStep.href}>{nextStep.label}</Link></p>
+        )}
+        {!staleCheck && !grade.passed && (
+          <p className="next-action small muted">Следующий шаг: исправьте код в редакторе и нажмите «Проверить» ещё раз.</p>
+        )}
+        {staleCheck && (
+          <p className="next-action"><button className="button secondary" type="button" disabled={buttonsDisabled} onClick={() => void handleCheck()}>Оценить текущий код</button></p>
         )}
       </div>}
       {!runResult && !grade && !discardedDuringCheck && (
-        <p className="small muted">Тесты выполняются в браузере и видны клиенту — это учебный прототип, не production-песочница.</p>
+        <p className="small muted">Нажмите «Проверить», чтобы оценить решение тестами в браузере.</p>
       )}
     </section>
   </div>;
