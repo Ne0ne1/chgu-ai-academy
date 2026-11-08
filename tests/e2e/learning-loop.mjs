@@ -117,7 +117,7 @@ async function main() {
     await page.goto(`${base}/`);
     await page.evaluate(() => localStorage.removeItem('chgu-ai-academy:learning:v1'));
     await page.reload();
-    await page.getByRole('link', { name: /Попробовать урок|Продолжить обучение|Начать обучение/ }).click();
+    await page.getByRole('link', { name: /Начать урок|Продолжить обучение|Попробовать урок|Начать обучение/ }).click();
     await page.waitForURL(/\/learn\/python\/variables/);
 
     await page.locator('details.lesson-help > summary').click();

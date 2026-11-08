@@ -7,7 +7,8 @@ export interface GradeIssue {
   message: string;
   expected?: string;
   actual?: string;
-  lessonAnchor?: '#names' | '#types' | '#conversion' | '#mistakes';
+  /** Fragment id on the related lesson page, e.g. `#branch`. */
+  lessonAnchor?: string;
 }
 
 export function runtimeIssue(testId: string, errorKind: RuntimeErrorKind | undefined, message: string): GradeIssue {
