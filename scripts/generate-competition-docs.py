@@ -13,8 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "competition"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# Placeholder for production URL filled after deploy attempt.
-PUBLIC_URL = "[УКАЗАТЬ_PRODUCTION_URL_ПОСЛЕ_ДЕПЛОЯ]"
+# Durable public repository. Production Hobby URL requires Vercel login by account owner.
+PUBLIC_URL = (
+    "Репозиторий: https://github.com/Ne0ne1/chgu-ai-academy\n"
+    "Production URL (Vercel Hobby): [ВСТАВИТЬ после деплоя владельцем аккаунта — см. competition/DEPLOY_VERCEL.md]\n"
+    "Временный anonymous deploy был создан CLI, но снаружи отвечает 403 и истекает ≈60 мин; "
+    "claim (если ещё активен): https://vercel.com/claim-deployment?code=b674621d-9853-4c05-a5cb-62a14ad6aedf"
+)
 EVIDENCE_DIR = "competition/evidence"
 
 
